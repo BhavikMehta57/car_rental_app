@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'hopOn',
+        title: 'Car Rental App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           fontFamily: 'OpenSans',
