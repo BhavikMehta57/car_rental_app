@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:car_rental_app/models/user.dart';
@@ -6,7 +7,7 @@ import 'package:car_rental_app/screens/payement_gateway_page.dart';
 import '../widgets/widgets.dart';
 
 class DetailsCar extends StatefulWidget {
-  final AsyncSnapshot<VehicleUser> docSnapshot;
+  final AsyncSnapshot<DocumentSnapshot> docSnapshot;
   final String bookedCar;
   String finalDestination;
   String initialLocation;
@@ -58,14 +59,14 @@ class _DetailsCarState extends State<DetailsCar> {
                       height: 20,
                     ),
                     Text(
-                      widget.docSnapshot.data.modelName,
+                      widget.docSnapshot.data['modelName'],
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 30,
                       ),
                     ),
                     Text(
-                      widget.docSnapshot.data.ownerName.toUpperCase(),
+                      widget.docSnapshot.data['ownerName'].toUpperCase(),
                       style: TextStyle(
                         color: Color.fromRGBO(27, 34, 46, 1),
                         fontSize: 12,
@@ -76,7 +77,7 @@ class _DetailsCarState extends State<DetailsCar> {
                       height: 20,
                     ),
                     Image.network(
-                      widget.docSnapshot.data.vehicleImg,
+                      widget.docSnapshot.data['vehicleImg'],
                       width: MediaQuery.of(context).size.width,
                     ),
                   ],
@@ -102,7 +103,7 @@ class _DetailsCarState extends State<DetailsCar> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SpecificationWidget(
-                        text: '₹ ' + widget.docSnapshot.data.amount,
+                        text: '₹ ' + widget.docSnapshot.data['amount'],
                         helpText: 'Car rent',
                       ),
                       SpecificationWidget(
@@ -112,7 +113,7 @@ class _DetailsCarState extends State<DetailsCar> {
                       SpecificationWidget(
                         text: '₹ ' +
                             (widget.rideCost +
-                                    (int.parse(widget.docSnapshot.data.amount)))
+                                    (int.parse(widget.docSnapshot.data['amount'])))
                                 .toString(),
                         helpText: 'Total cost',
                       ),
@@ -125,7 +126,7 @@ class _DetailsCarState extends State<DetailsCar> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SpecificationWidget(
-                        text: widget.docSnapshot.data.color,
+                        text: widget.docSnapshot.data['color'],
                         helpText: "Car's Color",
                       ),
                       SpecificationWidget(
@@ -157,7 +158,7 @@ class _DetailsCarState extends State<DetailsCar> {
                         finalDestination: widget.finalDestination,
                         bookedCar: widget.bookedCar,
                         amount: (widget.rideCost +
-                                (int.parse(widget.docSnapshot.data.amount)))
+                                (int.parse(widget.docSnapshot.data['amount'])))
                             .toString(),
                         pickupDate: widget.pickupDate,
                         dropOffDate: widget.dropOffDate,

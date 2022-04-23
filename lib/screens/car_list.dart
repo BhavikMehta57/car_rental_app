@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:car_rental_app/globalvariables.dart';
 import 'package:car_rental_app/widgets/widgets.dart';
@@ -41,7 +42,7 @@ class _CarListState extends State<CarList> {
           ),
           for (String car in widget.carlist)
             FutureBuilder(
-              future: FirebaseFunctions().getOwner(car),
+              future: FirebaseFirestore.instance.collection("vehicles").doc(car).get(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return GestureDetector(
@@ -74,7 +75,7 @@ class _CarListState extends State<CarList> {
                       ),
                       child: Column(
                         children: <Widget>[
-                          Image.network(snapshot.data.vehicleImg),
+                          Image.network(snapshot.data['vehicleImg'], height: MediaQuery.of(context).size.height/5,),
                           SizedBox(
                             height: 20,
                           ),
@@ -84,13 +85,13 @@ class _CarListState extends State<CarList> {
                               Column(
                                 children: [
                                   Text(
-                                    '₹' + snapshot.data.amount,
+                                    '₹' + snapshot.data['amount'],
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 15),
                                   ),
                                   Text(
-                                    snapshot.data.modelName,
+                                    snapshot.data['modelName'],
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 10),

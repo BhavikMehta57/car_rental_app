@@ -102,11 +102,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
     print('Your address::' + address);
     markerAll();
-
   }
 
  void markerAll()async {
-
+    markerSet.clear();
+    nearbyCarId.clear();
     await FirebaseFirestore.instance.collection('vehicles').get().then((value){
       for(int i=0;i<value.docs.length;i++){
         Marker carMarker = Marker(
@@ -115,18 +115,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         );
         setState(() {
           markerSet.add(carMarker);
+          nearbyCarId.add(value.docs[i].data()['vehicleId']);
         });
-
       }
-
     });
-
-
  }
 
   void startGeofireListener() {
     // print(currentPosition);
-    Geofire.initialize('carsAvailable');
+    Geofire.initialize('vehicles');
     Geofire.queryAtLocation(
             currentPosition.latitude, currentPosition.longitude, 20)
         .listen((map) {
@@ -140,33 +137,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         switch (callBack) {
           case Geofire.onKeyEntered:
             NearbyCar nearbyCar = NearbyCar();
-            nearbyCar.key = map['key'];
-            nearbyCar.latitude = map['latitude'];
-            nearbyCar.longitude = map['longitude'];
+            nearbyCar.key = map['vehicleId'];
+            nearbyCar.latitude = map['vehicleLatitude'];
+            nearbyCar.longitude = map['vehicleLongitude'];
 
-            nearbyCarId.add(map['key']);
+            nearbyCarId.add(map['vehicleId']);
             FireHelper.nearbyCarList.add(nearbyCar);
-            Marker carMarker = Marker(
-              markerId: MarkerId(nearbyCar.key),
-              position: LatLng(nearbyCar.latitude, nearbyCar.longitude),
-            );
-            markerSet.add(carMarker);
             break;
 
           case Geofire.onKeyExited:
             int index =
-                nearbyCarId.indexWhere((element) => element.key == map['key']);
+                nearbyCarId.indexWhere((element) => element.key == map['vehicleId']);
             nearbyCarId.removeAt(index);
-            FireHelper.removeFromList(map['key']);
+            FireHelper.removeFromList(map['vehicleId']);
             break;
 
           case Geofire.onKeyMoved:
             // Update your key's location
 
             NearbyCar nearbyCar = NearbyCar();
-            nearbyCar.key = map['key'];
-            nearbyCar.latitude = map['latitude'];
-            nearbyCar.longitude = map['longitude'];
+            nearbyCar.key = map['vehicleId'];
+            nearbyCar.latitude = map['vehicleLatitude'];
+            nearbyCar.longitude = map['vehicleLongitude'];
 
             FireHelper.updateNearByLocation(nearbyCar);
             break;
@@ -179,12 +171,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         }
       }
       NearbyCar nearbyCar = NearbyCar();
-      print(nearbyCarId);
     });
   }
 
   static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
+    target: LatLng(19.2470491, 72.8583918),
     zoom: 14.4746,
   );
   AppUser userData;

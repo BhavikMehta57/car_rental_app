@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:nanoid/nanoid.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:toast/toast.dart';
 import 'package:car_rental_app/globalvariables.dart';
@@ -12,7 +13,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class PaymentPage extends StatefulWidget {
   final String amount;
-  final AsyncSnapshot<VehicleUser> docSnapshot;
+  final AsyncSnapshot<DocumentSnapshot> docSnapshot;
   String finalDestination;
   String initialLocation;
   final String bookedCar;
@@ -33,6 +34,7 @@ class PaymentPage extends StatefulWidget {
 
 class _PaymentPageState extends State<PaymentPage> {
   Razorpay razorpay;
+  String id;
 
   @override
   void initState() {
@@ -44,6 +46,7 @@ class _PaymentPageState extends State<PaymentPage> {
     razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handlerExternalWallet);
 
     openCheckOut();
+    id = nanoid(10).toString();
   }
   //TODO : Remove RAZORPAY KEY Afterwards
   // rzp_test_l8yCRSz3UfiXKB
@@ -69,19 +72,21 @@ class _PaymentPageState extends State<PaymentPage> {
         .reference()
         .child('user_history/${currentFirebaseUser.phoneNumber}/${widget.bookedCar}');
 
-    Map historyMap = {
-      'ownerId': widget.bookedCar,
-      'modelName': widget.docSnapshot.data.modelName,
-      'color': widget.docSnapshot.data.color,
-      'ownerName': widget.docSnapshot.data.ownerName,
-      'vehicleNumber': widget.docSnapshot.data.vehicleNumber,
+    Map<String, dynamic> historyMap = {
+      'carId': widget.bookedCar,
+      'modelName': widget.docSnapshot.data['modelName'],
+      'ownerContact': widget.docSnapshot.data['ownerphoneNumber'],
+      'color': widget.docSnapshot.data['color'],
+      'ownerName': widget.docSnapshot.data['ownerName'],
+      'vehicleNumber': widget.docSnapshot.data['vehicleNumber'],
       'amount': widget.amount,
       'pickUp' : widget.initialLocation,
       'dropOff' : widget.finalDestination,
       'pickupDate': widget.pickupDate,
-      'dropofDate': widget.dropOffDate
+      'dropofDate': widget.dropOffDate,
+      'timestamp': DateTime.now().toString(),
     };
-
+    FirebaseFirestore.instance.collection("users").doc(currentFirebaseUser.phoneNumber).collection("UserHistory").doc(id).set(historyMap);
     dbref.set(historyMap).then((value) => Navigator.push(
           context,
           MaterialPageRoute(
@@ -99,17 +104,18 @@ class _PaymentPageState extends State<PaymentPage> {
           .reference()
           .child('owner_history/${widget.bookedCar}/${currentFirebaseUser.phoneNumber}');
 
-      Map historyMap = {
+      Map<String, dynamic> historyMap = {
         'userName': value.data()['name'],
         'age': value.data()['age'],
         'pickUp' : widget.initialLocation,
         'dropOff' : widget.finalDestination,
         'amount': widget.amount,
         'pickupDate': widget.pickupDate,
-        'dropofDate': widget.dropOffDate
+        'dropofDate': widget.dropOffDate,
+        'timestamp': DateTime.now().toString(),
       };
-
       dbref.set(historyMap);
+      FirebaseFirestore.instance.collection("users").doc(widget.docSnapshot.data['ownerphoneNumber']).collection("OwnerHistory").doc(id).set(historyMap);
     });
 
 
@@ -147,8 +153,8 @@ class _PaymentPageState extends State<PaymentPage> {
 
   @override
   Widget build(BuildContext context) {
-    saveUserHistory();
     saveOwnerHistory();
+    saveUserHistory();
     return RideHistory();
   }
 }
