@@ -31,25 +31,12 @@ class _SearchDropOffLocationState extends State<SearchDropOffLocation> {
         child: Column(
           children: [
             Container(
-              height: MediaQuery.of(context).size.height * 0.5,
+              height: MediaQuery.of(context).size.height * 0.25,
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  CustomBackButton(pageHeader: 'Search dropOff location'),
+                  CustomBackButton(pageHeader: 'Search Destination'),
                   SizedBox(height: 30),
-                  Container(
-                    width: MediaQuery.of(context).size.width * 0.85,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        controller: pickUpTextEditingController,
-                        decoration: InputDecoration(
-                          labelText: 'Pick up location',
-                        ),
-                        style: TextStyle(fontSize: 14, color: Colors.black54),
-                      ),
-                    ),
-                  ),
                   Container(
                     width: MediaQuery.of(context).size.width * 0.85,
                     child: Padding(

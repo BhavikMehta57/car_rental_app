@@ -481,7 +481,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               children: [
                                 Icon(Icons.search),
                                 Text(
-                                  '\t\tDrop off location',
+                                  '\t\tDestination',
                                   style: TextStyle(
                                       fontSize: 14, color: Colors.black54),
                                 ),
@@ -550,7 +550,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   height: 4,
                                 ),
                                 Text(
-                                  'Your home address',
+                                  'Your Location',
                                   style: TextStyle(
                                       fontSize: 11, color: Colors.black54),
                                 ),
@@ -565,34 +565,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       Divider(),
                       SizedBox(
                         height: 8,
-                      ),
-                      Container(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Icon(Icons.work),
-                            SizedBox(
-                              width: 20,
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Add Office?',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                SizedBox(
-                                  height: 4,
-                                ),
-                                Text(
-                                  'Your office address',
-                                  style: TextStyle(
-                                      fontSize: 11, color: Colors.black54),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
                       ),
                     ],
                   ),

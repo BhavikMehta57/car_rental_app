@@ -50,20 +50,8 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
         return;
       } else {
-        String pass = ds.data()["Password"];
-        bool isBlocked = ds.data()["isBlocked"];
-
-        if (pass == passwordController.text) {
           //Check user type
           //Prevent Log In if account is blocked
-          if (isBlocked) {
-            final snackBar = SnackBar(
-              content: Text('This account has been blocked'),
-              duration: Duration(seconds: 3),
-            );
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-            return;
-          }
           // Password is correct, hence send OTP
           Navigator.push(
             context,
@@ -136,15 +124,6 @@ class _LoginPageState extends State<LoginPage> {
               },
             ),
           );
-        } else {
-          //Passwords don't match, show error
-          final snackBar = SnackBar(
-            content: Text('Invalid Credentials !'),
-            duration: Duration(seconds: 3),
-          );
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          return;
-        }
       }
     } catch (e) {
       print(e);
@@ -191,12 +170,6 @@ class _LoginPageState extends State<LoginPage> {
                         obscure: false,
                         icon: Icon(Icons.phone_android_outlined),
                       ),
-                      InputTextField(
-                        controller: passwordController,
-                        label: 'Password',
-                        obscure: true,
-                        icon: Icon(Icons.lock),
-                      ),
                       SizedBox(
                         height: 30,
                       ),
@@ -215,24 +188,7 @@ class _LoginPageState extends State<LoginPage> {
                             showSnackBar(
                                 'Please provide a valid phone number');
                           }
-
-                          if (passwordController.text.length < 6) {
-                            showSnackBar(
-                                'Please provide a password of length more than 6');
-                          }
-                          BuildContext dialogContext;
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (BuildContext context) {
-                              dialogContext = context;
-                              return ProgressDialog(
-                                status: 'Sending OTP...',
-                              );
-                            },
-                          );
                           await loginUser(context);
-                          Navigator.pop(dialogContext);
                         },
                         child: CustomButton(
                           text: 'Login',
