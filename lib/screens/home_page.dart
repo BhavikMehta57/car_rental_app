@@ -125,6 +125,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
             nearbyCarId.add(map['key']);
             FireHelper.nearbyCarList.add(nearbyCar);
+            Marker carMarker = Marker(
+              markerId: MarkerId(nearbyCar.key),
+              position: LatLng(nearbyCar.latitude, nearbyCar.longitude),
+            );
+            markerSet.add(carMarker);
             break;
 
           case Geofire.onKeyExited:
@@ -153,6 +158,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         }
       }
       NearbyCar nearbyCar = NearbyCar();
+      print(nearbyCarId);
     });
   }
 
@@ -897,7 +903,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         );
 
         Marker pickUpLocMarker = Marker(
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
           infoWindow:
               InfoWindow(title: initialPos.placeName, snippet: 'PickUp'),
           position: pickUpLatLng,
@@ -906,13 +912,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
         Marker dropOffLocMarker = Marker(
           icon:
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
           infoWindow: InfoWindow(title: finalPos.placeName, snippet: 'DropOff'),
           position: dropOffLatLng,
           markerId: MarkerId('dropOffId'),
         );
 
         setState(() {
+          markerSet.clear();
           markerSet.add(pickUpLocMarker);
           markerSet.add(dropOffLocMarker);
         });

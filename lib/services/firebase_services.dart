@@ -98,7 +98,7 @@ class FirebaseFunctions {
           .collection('users/${currentUser.phoneNumber}/vehicle_details');
 
       await collectionReference
-          .doc(currentUser.phoneNumber)
+          .doc(data['vehicleId'])
           .set(data)
           .then((_) => isRegistered = 'true')
       // ignore: return_of_invalid_type_from_catch_error

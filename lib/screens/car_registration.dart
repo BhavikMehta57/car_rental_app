@@ -8,6 +8,7 @@ import 'package:car_rental_app/screens/owner_homePage.dart';
 import 'package:car_rental_app/services/firebase_services.dart';
 import 'package:car_rental_app/services/validation_services.dart';
 import 'package:car_rental_app/widgets/widgets.dart';
+import 'package:nanoid/nanoid.dart';
 
 class VehicleDetails extends StatefulWidget {
   @override
@@ -47,6 +48,7 @@ class _VehicleDetailsState extends State<VehicleDetails> {
   FirebaseFunctions firebaseFunctions = FirebaseFunctions();
 
   void initVehicleUser() {
+    owner.vehicleId = nanoid(8);
     owner.modelName = _modelNameController.text;
     owner.vehicleNumber = _vehicleNumberController.text;
     owner.ownerName = _ownerNameController.text;

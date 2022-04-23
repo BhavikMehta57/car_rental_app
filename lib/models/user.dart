@@ -39,6 +39,7 @@ class AppUser {
 }
 
 class VehicleUser {
+  String vehicleId;
   String modelName;
   String vehicleNumber;
   String ownerName;
@@ -53,6 +54,7 @@ class VehicleUser {
 
   Map<String, dynamic> toMap() {
     return {
+      'vehicleId': vehicleId,
       'modelName': modelName,
       'vehicleNumber': vehicleNumber,
       'ownerName': ownerName,
@@ -66,6 +68,7 @@ class VehicleUser {
   }
 
   VehicleUser.fromMap(Map<String, dynamic> data) {
+    vehicleId = data['vehicleId'];
     modelName = data['modelName'];
     vehicleNumber = data['vehicleNumber'];
     ownerName = data['ownerName'];

@@ -178,7 +178,7 @@ class _DisplayMapState extends State<DisplayMap> {
                 child: ListTile(
                   leading: Icon(Icons.card_membership_rounded),
                   title: Text(
-                    'Register your car',
+                    'Register new car',
                     // style: TextStyle(fontSize: 16),
                   ),
                 ),
