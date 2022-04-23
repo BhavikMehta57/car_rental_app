@@ -21,7 +21,7 @@ class _SearchDropOffLocationState extends State<SearchDropOffLocation> {
 
   @override
   Widget build(BuildContext context) {
-    String placeAddress = ' Pick Up loaction';
+    String placeAddress = 'Pick Up location';
     pickUpTextEditingController.text = placeAddress;
 
     return Scaffold(
@@ -35,7 +35,7 @@ class _SearchDropOffLocationState extends State<SearchDropOffLocation> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  CustomBackButton(pageHeader: 'Seach dropOff location'),
+                  CustomBackButton(pageHeader: 'Search dropOff location'),
                   SizedBox(height: 30),
                   Container(
                     width: MediaQuery.of(context).size.width * 0.85,
@@ -72,9 +72,7 @@ class _SearchDropOffLocationState extends State<SearchDropOffLocation> {
               ),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(40),
-                ),
+                borderRadius: BorderRadius.all(Radius.circular(40)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey,

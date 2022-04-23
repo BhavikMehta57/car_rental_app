@@ -22,6 +22,7 @@ class _CarListState extends State<CarList> {
   @override
   void initState() {
     super.initState();
+    print(widget.carlist);
   }
 
   @override

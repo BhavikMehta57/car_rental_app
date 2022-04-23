@@ -16,7 +16,7 @@ class _OwnerHistoryState extends State<OwnerHistory> {
   void initState() {
     dbref = FirebaseDatabase.instance
         .reference()
-        .child("owner_history/${currentFirebaseUser.uid}");
+        .child("owner_history/${currentFirebaseUser.phoneNumber}");
     super.initState();
   }
 

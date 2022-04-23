@@ -3,6 +3,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
    <application
         android:label="car_rental_app"
         android:icon="@mipmap/ic_launcher">
@@ -45,8 +46,10 @@
            android:name="com.yalantis.ucrop.UCropActivity"
            android:screenOrientation="portrait"
            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
-
+       <meta-data
+           android:name="com.google.android.gms.version"
+           android:value="@integer/google_play_services_version" />
        <meta-data android:name="com.google.android.geo.API_KEY"
-           android:value="AIzaSyBB34ETGgqbdUe4LRRcNF7lmY8XWdFE7NM"/>
+           android:value="AIzaSyCNu8KpTJWCbFP3_P29msGvZTqim9mIj9M"/>
     </application>
 </manifest>

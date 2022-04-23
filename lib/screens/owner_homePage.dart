@@ -375,12 +375,12 @@ class _DisplayMapState extends State<DisplayMap> {
     print("entered");
 
     Geofire.initialize('carsAvailable');
-    Geofire.setLocation(currentFirebaseUser.uid, currentPosition.latitude,
+    Geofire.setLocation(currentFirebaseUser.phoneNumber, currentPosition.latitude,
         currentPosition.longitude);
 
     tripRequestRef = FirebaseDatabase.instance
         .reference()
-        .child('cars/${currentFirebaseUser.uid}/newTrip');
+        .child('cars/${currentFirebaseUser.phoneNumber}/newTrip');
     tripRequestRef.set('waiting');
 
     tripRequestRef.onValue.listen((event) {});
@@ -394,7 +394,7 @@ class _DisplayMapState extends State<DisplayMap> {
       currentPosition = position;
       if (isAvailable) {
         Geofire.setLocation(
-            currentFirebaseUser.uid, position.latitude, position.longitude);
+            currentFirebaseUser.phoneNumber, position.latitude, position.longitude);
       }
       LatLng pos = LatLng(position.latitude, position.longitude);
       CameraPosition cp = new CameraPosition(target: pos, zoom: 15);
@@ -403,7 +403,7 @@ class _DisplayMapState extends State<DisplayMap> {
   }
 
   void goOffline() {
-    Geofire.removeLocation(currentFirebaseUser.uid);
+    Geofire.removeLocation(currentFirebaseUser.phoneNumber);
     tripRequestRef.onDisconnect();
     tripRequestRef.remove();
     tripRequestRef = null;

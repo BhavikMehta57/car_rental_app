@@ -36,7 +36,7 @@ class _RideHistoryState extends State<RideHistory> {
       onPressed: () {
         print(lists[index]['ownerId']);
         dbref = FirebaseDatabase.instance.reference().child(
-            "user_history/${currentFirebaseUser.uid}/${lists[index]['ownerId']}");
+            "user_history/${currentFirebaseUser.phoneNumber}/${lists[index]['ownerId']}");
         dbref.onDisconnect();
         dbref.remove();
         // Navigator.pop(context);
@@ -72,7 +72,7 @@ class _RideHistoryState extends State<RideHistory> {
   void initState() {
     dbref = FirebaseDatabase.instance
         .reference()
-        .child("user_history/${currentFirebaseUser.uid}");
+        .child("user_history/${currentFirebaseUser.phoneNumber}");
     super.initState();
   }
 

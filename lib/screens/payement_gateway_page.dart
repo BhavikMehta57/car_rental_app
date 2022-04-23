@@ -67,7 +67,7 @@ class _PaymentPageState extends State<PaymentPage> {
     print("UID :: " + currentFirebaseUser.uid);
     DatabaseReference dbref = FirebaseDatabase.instance
         .reference()
-        .child('user_history/${currentFirebaseUser.uid}/${widget.bookedCar}');
+        .child('user_history/${currentFirebaseUser.phoneNumber}/${widget.bookedCar}');
 
     Map historyMap = {
       'ownerId': widget.bookedCar,
@@ -93,11 +93,11 @@ class _PaymentPageState extends State<PaymentPage> {
   void saveOwnerHistory(){
 
     FirebaseFirestore.instance.
-    collection('users').doc(currentFirebaseUser.uid).
+    collection('users').doc(currentFirebaseUser.phoneNumber).
     get().then((value) {
       DatabaseReference dbref = FirebaseDatabase.instance
           .reference()
-          .child('owner_history/${widget.bookedCar}/${currentFirebaseUser.uid}');
+          .child('owner_history/${widget.bookedCar}/${currentFirebaseUser.phoneNumber}');
 
       Map historyMap = {
         'userName': value.data()['name'],
