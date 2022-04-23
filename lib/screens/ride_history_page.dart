@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:car_rental_app/globalvariables.dart';
@@ -83,19 +84,31 @@ class _RideHistoryState extends State<RideHistory> {
         padding: EdgeInsets.symmetric(horizontal: 20),
         children: <Widget>[
           CustomBackButton(pageHeader: 'My rides'),
-          FutureBuilder(
-            future: dbref.once(),
-            builder: (context, AsyncSnapshot<DataSnapshot> snapshot) {
-              if (snapshot.hasData) {
-                lists.clear();
-                Map<dynamic, dynamic> values = snapshot.data.value;
-                if (values != null) {
-                  values.forEach((key, values) {
-                    lists.add(values);
-                  });
-                }
+          StreamBuilder(
+            stream: FirebaseFirestore.instance.collection('users').doc(currentFirebaseUser.phoneNumber).collection('UserHistory').snapshots(),
+            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (!snapshot.hasData) {
+                print("No Records Found");
+                return Column(
+                  children: [
+                    SizedBox(height: MediaQuery.of(context).size.height*0.2,),
+                    CircularProgressIndicator(),
+                  ],
+                );                  }
+              else if(snapshot.connectionState == ConnectionState.waiting){
+                print("in process");
+                return Column(
+                  children: [
+                    SizedBox(height: MediaQuery.of(context).size.height*0.2,),
+                    CircularProgressIndicator(),
+                  ],
+                );
+
+              }
+              else{
                 return new ListView.builder(
                   shrinkWrap: true,
+                  scrollDirection: Axis.vertical,
                   itemCount: lists.length,
                   itemBuilder: (BuildContext context, int index) {
                     return Container(
