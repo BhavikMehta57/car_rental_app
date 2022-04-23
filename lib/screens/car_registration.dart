@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'package:car_rental_app/assistant/request.dart';
+import 'package:car_rental_app/models/placePrediction.dart';
+import 'package:car_rental_app/screens/search_dropOff.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,6 +12,8 @@ import 'package:car_rental_app/services/firebase_services.dart';
 import 'package:car_rental_app/services/validation_services.dart';
 import 'package:car_rental_app/widgets/widgets.dart';
 import 'package:nanoid/nanoid.dart';
+
+import '../configMaps.dart';
 
 class VehicleDetails extends StatefulWidget {
   @override
@@ -24,9 +29,17 @@ class _VehicleDetailsState extends State<VehicleDetails> {
   TextEditingController _colorController = TextEditingController();
   TextEditingController _aadharcardController = TextEditingController();
   TextEditingController _rentAmount = TextEditingController();
+  TextEditingController location = TextEditingController();
+
+  String vehicleLoc = "";
+  String vehicleLatitude = "";
+  String vehicleLongitude = "";
 
   VehicleUser owner = VehicleUser();
+  PlacePrediction vehicleLocation;
   File imageFile;
+
+  List<PlacePrediction> placePredictionList = [];
 
   Future<void> _pickImage(ImageSource source) async {
     final selected = await ImagePicker().getImage(source: source);
@@ -51,12 +64,37 @@ class _VehicleDetailsState extends State<VehicleDetails> {
     owner.vehicleId = nanoid(8);
     owner.modelName = _modelNameController.text;
     owner.vehicleNumber = _vehicleNumberController.text;
+    owner.vehicleLoc = vehicleLoc;
+    owner.vehicleLatitude = vehicleLatitude;
+    owner.vehicleLongitude = vehicleLongitude;
     owner.ownerName = _ownerNameController.text;
     owner.color = _colorController.text;
     owner.aadharNumber = _aadharcardController.text;
     owner.hasCompletedRegistration = true;
     owner.amount = _rentAmount.text;
     owner.ownerphoneNumber = FirebaseAuth.instance.currentUser.phoneNumber;
+  }
+
+  void findPlace(String placeName) async {
+    if (placeName.length > 0) {
+      String autoCompleteUrl =
+          'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$placeName&key=$geocodingApi&components=country:in';
+      var res = await RequestAssistant.getRequest(autoCompleteUrl);
+
+      if (res == 'failed') {
+        return;
+      }
+      if (res['status'] == 'OK') {
+        var predictions = res['predictions'];
+        var placeList = (predictions as List)
+            .map((e) => PlacePrediction.fromJson(e))
+            .toList();
+        setState(() {
+          placePredictionList = placeList;
+        });
+      }
+      print(placePredictionList[0].place_id);
+    }
   }
 
   @override
@@ -178,10 +216,80 @@ class _VehicleDetailsState extends State<VehicleDetails> {
                       height: 0.03 * deviceSize.height,
                     ),
                     InputFormField(
-                      fieldName: 'Rent amount',
+                      fieldName: 'Rent amount per day',
                       obscure: false,
                       controller: _rentAmount,
                       validator: ValidationService().rentAmountValidator,
+                    ),
+                    SizedBox(
+                      height: 0.03 * deviceSize.height,
+                    ),
+                    TextField(
+                      onChanged: (val) {
+                        findPlace(val);
+                      },
+                      controller: location,
+                      decoration: InputDecoration(
+                        labelText: '\tSelect Location',
+                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(left: 8.0),
+                      height: MediaQuery.of(context).size.height * 0.2,
+                      child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: placePredictionList.length,
+                          scrollDirection: Axis.vertical,
+                          physics: BouncingScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                                  onTap: () {
+                                    vehicleLocation = placePredictionList[index];
+                                    location.text = vehicleLocation.main_text + " " + vehicleLocation.secondary_text;
+                                  },
+                                  child: Container(
+                                    child: Column(
+                                      children: [
+                                        SizedBox(
+                                          width: 14,
+                                        ),
+                                        Row(
+                                          children: [
+                                            Icon(Icons.add_location),
+                                            SizedBox(
+                                              width: 14,
+                                            ),
+                                            Expanded(
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                    placePredictionList[index].main_text,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: TextStyle(fontSize: 16),
+                                                  ),
+                                                  SizedBox(
+                                                    height: 5,
+                                                  ),
+                                                  Text(
+                                                    placePredictionList[index].secondary_text,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(
+                                          width: 14,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                            );
+                          }
+                      ),
                     ),
                     SizedBox(
                       height: 0.05 * deviceSize.height,
@@ -189,6 +297,16 @@ class _VehicleDetailsState extends State<VehicleDetails> {
                     GestureDetector(
                       onTap: () async {
                         if(_formKey.currentState.validate()){
+                          String placeDetailsUrl = 'https://maps.googleapis.com/maps/api/place/details/json?place_id=${vehicleLocation.place_id}&key=$geocodingApi';
+                          var res = await RequestAssistant.getRequest(placeDetailsUrl);
+                          if (res == 'failed') {
+                            return;
+                          }
+                          if (res['status'] == 'OK') {
+                            vehicleLoc = res['result']['name'];
+                            vehicleLatitude = res['result']['geometry']['location']['lat'].toString();
+                            vehicleLongitude = res['result']['geometry']['location']['lng'].toString();
+                          }
                           ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('Processing')));
                           initVehicleUser();

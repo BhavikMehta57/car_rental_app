@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nb_utils/nb_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:car_rental_app/globalvariables.dart';
 import 'package:car_rental_app/models/user.dart';
@@ -58,7 +60,8 @@ class _DisplayMapState extends State<DisplayMap> {
   Color availabilityColor = Colors.black;
   bool isAvailable = false;
   String exist = 'donotexist';
-
+  Set<Marker> myCars = {};
+  
   void setupPositionLocator() async {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
@@ -73,6 +76,7 @@ class _DisplayMapState extends State<DisplayMap> {
   void initState() {
     getUser();
     setupPositionLocator();
+    getMyCars();
     super.initState();
   }
 
@@ -83,6 +87,22 @@ class _DisplayMapState extends State<DisplayMap> {
     // });
   }
 
+  void getMyCars() async {
+    await FirebaseFirestore.instance.collection("users").doc(FirebaseAuth.instance.currentUser.phoneNumber).collection("vehicle_details").get().then((value) {
+      for(int i=0;i<value.docs.length;i++){
+        Marker carMarker = Marker(
+          markerId: MarkerId(value.docs[i].data()['vehicleId']),
+          position: LatLng(double.parse(value.docs[i].data()['vehicleLatitude']), double.parse(value.docs[i].data()['vehicleLongitude'])),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan),
+        );
+        setState(() {
+          myCars.add(carMarker);
+        });
+      }
+      print("ZEPTOOO"+myCars.toString());
+    });
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -232,6 +252,7 @@ class _DisplayMapState extends State<DisplayMap> {
             zoomGesturesEnabled: true,
             zoomControlsEnabled: true,
             compassEnabled: true,
+            markers: myCars,
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
               mapController = controller;
@@ -275,7 +296,7 @@ class _DisplayMapState extends State<DisplayMap> {
             right: 0,
             bottom: 0,
             child: Container(
-              height: 125,
+              height: 400,
               decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -291,59 +312,103 @@ class _DisplayMapState extends State<DisplayMap> {
                     ),
                   ]),
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    SizedBox(
-                      height: 5,
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        await checkIfDocExists();
-                        if (exist == 'docexist') {
-                          showModalBottomSheet(
-                              isDismissible: false,
-                              context: context,
-                              builder: (BuildContext context) => ConfirmSheet(
-                                    title: (!isAvailable)
-                                        ? 'Give my car on rent'
-                                        : "Don't want to keep the car for others?",
-                                    subtitle: (!isAvailable)
-                                        ? 'Want to give your car on rent?'
-                                        : 'Want to remove your car from renting?',
-                                    onPressed: () {
-                                      if (!isAvailable) {
-                                        goOnline();
-                                        getLocationUpdates();
-                                        Navigator.pop(context);
-                                        setState(() {
-                                          availabilityColor = Colors.green;
-                                          availabilityText = 'Remove from rent';
-                                          isAvailable = true;
-                                        });
-                                      } else {
-                                        goOffline();
-                                        Navigator.pop(context);
-                                        setState(() {
-                                          availabilityColor = Colors.black;
-                                          availabilityText =
-                                              'Give my car on rent';
-                                          isAvailable = false;
-                                        });
-                                      }
-                                    },
-                                  ));
-                        } else {
-                          showSnackBar(exist);
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                child: StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection("users")
+                        .doc(FirebaseAuth.instance.currentUser.phoneNumber)
+                        .collection("vehicle_details")
+                        .snapshots()
+                    ,
+                    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+                      if(!snapshot.hasData){
+                        print("Connection state: has no data");
+                        return Column(
+                          children: [
+                            SizedBox(
+                              height:MediaQuery.of(context).size.height*0.2,
+                            ),
+                            CircularProgressIndicator(),
+                          ],
+                        );
+                      }
+                      else if(snapshot.connectionState == ConnectionState.waiting){
+                        print("Connection state: waiting");
+                        return Column(children: [
+                          SizedBox(
+                            height:MediaQuery.of(context).size.height*0.2,
+                          ),
+                          CircularProgressIndicator(),
+                        ],
+                        );
+                      }
+                      else{
+                        print("Connection state: hasdata");
+                        if(snapshot.data.docs.length == 0){
+                          return Center(
+                            child: Text("No Cars Registered Yet"),
+                          );
                         }
-                      },
-                      child: AvailabilityButton(
-                        text: availabilityText,
-                        color: availabilityColor,
-                      ),
-                    ),
-                  ],
+                        else{
+                          return ListView.builder(
+                            scrollDirection: Axis.vertical,
+                            itemCount: snapshot.data.docs.length,
+                            padding: EdgeInsets.only(
+                              left: 5,
+                              right: 5,
+                            ),
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children:[
+                                      Container(
+                                          decoration: BoxDecoration(
+                                            boxShadow: defaultBoxShadow(
+                                              shadowColor: shadowColorGlobal,
+                                              blurRadius: 0.5,
+                                            ),
+                                            border: Border.all(color: Colors.transparent),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          padding: EdgeInsets.all(10),
+                                          margin: EdgeInsets.only(bottom: 5),
+                                          child: Row(
+                                            children: [
+                                              Image(
+                                                image: NetworkImage(snapshot.data.docs[index]["vehicleImg"]),
+                                                width: ((MediaQuery.of(context).size.width - 56)/2) * 0.6,
+                                                height: ((MediaQuery.of(context).size.width -56)/2) * 0.6,
+                                              )
+                                                  .cornerRadiusWithClipRRect(5)
+                                                  .paddingRight(5),
+                                              Expanded(
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.max,
+                                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    Text("Model Name: ${snapshot.data.docs[index]["modelName"]}"),
+                                                    Text("Car Number: ${snapshot.data.docs[index]["vehicleNumber"]}"),
+                                                    Text("Vehicle Colour: ${snapshot.data.docs[index]["color"]}"),
+                                                  ],
+                                                ),
+                                              ),
+                                              Icon(Icons.remove),
+                                            ],
+                                          )
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              );
+                            },
+                          );
+                        }
+                      }
+                    }
                 ),
               ),
             ),
