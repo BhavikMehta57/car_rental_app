@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:car_rental_app/models/user.dart';
@@ -53,6 +54,7 @@ class _VehicleDetailsState extends State<VehicleDetails> {
     owner.aadharNumber = _aadharcardController.text;
     owner.hasCompletedRegistration = true;
     owner.amount = _rentAmount.text;
+    owner.ownerphoneNumber = FirebaseAuth.instance.currentUser.phoneNumber;
   }
 
   @override
@@ -83,6 +85,7 @@ class _VehicleDetailsState extends State<VehicleDetails> {
                                 borderRadius: BorderRadius.circular(5),
                                 child: Container(
                                   width: MediaQuery.of(context).size.width - 20,
+                                  height: MediaQuery.of(context).size.height/4,
                                   child: Image.file(
                                     imageFile,
                                     fit: BoxFit.fitWidth,
@@ -175,40 +178,42 @@ class _VehicleDetailsState extends State<VehicleDetails> {
                     InputFormField(
                       fieldName: 'Rent amount',
                       obscure: false,
-                      validator: ValidationService().aadharNumberValidator,
                       controller: _rentAmount,
+                      validator: ValidationService().rentAmountValidator,
                     ),
                     SizedBox(
                       height: 0.05 * deviceSize.height,
                     ),
                     GestureDetector(
                       onTap: () async {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Processing')));
-                        initVehicleUser();
-                        String isComplete =
-                            await firebaseFunctions.uploadVehicleInfo(
-                                owner.toMap(), imageFile, context);
-                        if (isComplete == 'true') {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return DisplayMap();
-                              },
-                            ),
-                          );
-                        } else {
+                        if(_formKey.currentState.validate()){
                           ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(isComplete)));
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return VehicleDetails();
-                              },
-                            ),
-                          );
+                              SnackBar(content: Text('Processing')));
+                          initVehicleUser();
+                          String isComplete =
+                          await firebaseFunctions.uploadVehicleInfo(
+                              owner.toMap(), imageFile, context);
+                          if (isComplete == 'true') {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return DisplayMap();
+                                },
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(isComplete)));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return VehicleDetails();
+                                },
+                              ),
+                            );
+                          }
                         }
                       },
                       child: CustomButton(

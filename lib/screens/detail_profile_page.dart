@@ -47,7 +47,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     infoData: widget.docSnapshot.data.bloodGroup),
                 Info(
                     infoText: 'Contact number: ',
-                    infoData: widget.docSnapshot.data.contact),
+                    infoData: widget.docSnapshot.data.phoneNumber),
                 Info(
                     infoText: 'License number: ',
                     infoData: widget.docSnapshot.data.licenseNumber),

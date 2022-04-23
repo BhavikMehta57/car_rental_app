@@ -19,7 +19,7 @@ class FirebaseFunctions {
     User currentUser = FirebaseAuth.instance.currentUser;
 
     await collectionReference
-        .doc(currentUser.uid)
+        .doc(currentUser.phoneNumber)
         .set(data)
         .then((_) => isUploaded = 'true')
         .catchError((e) => isUploaded = e.message);
@@ -34,7 +34,7 @@ class FirebaseFunctions {
     User currentUser = FirebaseAuth.instance.currentUser;
 
     bool isComplete = false;
-    await collectionReference.doc(currentUser.uid).get().then((docSnap) =>
+    await collectionReference.doc(currentUser.phoneNumber).get().then((docSnap) =>
         isComplete = AppUser.fromMap(docSnap.data()).hasCompleteProfile);
     print('iscomplete');
     print(isComplete);
@@ -43,7 +43,7 @@ class FirebaseFunctions {
   }
 
   // Get data from firestore
-  final uid = FirebaseAuth.instance.currentUser.uid;
+  final uid = FirebaseAuth.instance.currentUser.phoneNumber;
 
   Future<AppUser> getUser() async {
     final userDoc = await collectionReference.doc(uid).get();
@@ -70,7 +70,7 @@ class FirebaseFunctions {
       var uuid = Uuid().v4();
 
       final Reference firebaseStorageRef =
-      FirebaseStorage.instance.ref().child('images/$uuid$fileExtension');
+      FirebaseStorage.instance.ref().child('images/$uid/$uuid$fileExtension');
 
       UploadTask task = firebaseStorageRef.putFile(localFile);
 
@@ -95,10 +95,10 @@ class FirebaseFunctions {
       User currentUser = FirebaseAuth.instance.currentUser;
       currentFirebaseUser = currentUser;
       CollectionReference collectionReference = FirebaseFirestore.instance
-          .collection('users/${currentUser.uid}/vehicle_details');
+          .collection('users/${currentUser.phoneNumber}/vehicle_details');
 
       await collectionReference
-          .doc(currentUser.uid)
+          .doc(currentUser.phoneNumber)
           .set(data)
           .then((_) => isRegistered = 'true')
       // ignore: return_of_invalid_type_from_catch_error

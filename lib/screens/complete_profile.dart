@@ -18,7 +18,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
   TextEditingController _licenseController = TextEditingController();
   TextEditingController _ageController = TextEditingController();
   TextEditingController _bloodController = TextEditingController();
-  TextEditingController _contactController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
 
   // String _imageUrl;
 
@@ -31,9 +31,10 @@ class _CompleteProfileState extends State<CompleteProfile> {
     user.age = _ageController.text;
     user.licenseNumber = _licenseController.text;
     user.bloodGroup = _bloodController.text;
-    user.contact = _contactController.text;
+    user.emailID = emailController.text;
     // user.dpURL = _imageUrl;
-    user.emailID = FirebaseAuth.instance.currentUser.email;
+    user.phoneNumber = FirebaseAuth.instance.currentUser.phoneNumber;
+    user.uuid = FirebaseAuth.instance.currentUser.uid;
     user.hasCompleteProfile = true;
   }
 
@@ -42,6 +43,9 @@ class _CompleteProfileState extends State<CompleteProfile> {
     Size deviceSize = MediaQuery.of(context).size;
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Complete your Profile"),
+      ),
       body: Builder(
         builder: (context) {
           return Form(
@@ -98,9 +102,9 @@ class _CompleteProfileState extends State<CompleteProfile> {
                     //     ),
                     //   ),
                     // ),
-                    CustomBackButton(
-                      pageHeader: 'Complete your profile',
-                    ),
+                    // CustomBackButton(
+                    //   pageHeader: 'Complete your profile',
+                    // ),
 
                     SizedBox(
                       height: 20,
@@ -133,10 +137,10 @@ class _CompleteProfileState extends State<CompleteProfile> {
                       height: 0.03 * deviceSize.height,
                     ),
                     InputFormField(
-                      fieldName: 'Contact Number',
+                      fieldName: 'Email ID',
                       obscure: false,
-                      validator: ValidationService().contactValidator,
-                      controller: _contactController,
+                      validator: ValidationService().emailValidator,
+                      controller: emailController,
                     ),
                     SizedBox(
                       height: 0.03 * deviceSize.height,
@@ -183,6 +187,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                         //         SnackBar(content: Text(isComplete)));
                         //   }
                         // }
+                        if(_formKey.currentState.validate()){
                         ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Processing')));
                         initAppUser();
@@ -208,7 +213,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                               },
                             ),
                           );
-                        }
+                        }}
                       },
                       child: CustomButton(
                         text: 'Save',

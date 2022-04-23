@@ -82,7 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           Expanded(
             child: Align(
-              alignment: FractionalOffset.bottomCenter,
+              alignment: FractionalOffset.topCenter,
               child: Container(
                 height: 240,
                 // color: Colors.white,

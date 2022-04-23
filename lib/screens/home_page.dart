@@ -301,7 +301,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: ListTile(
                   leading: Icon(Icons.directions_car_rounded),
                   title: Text(
-                    'Give my car on rent',
+                    'Rent my cars',
                     style: TextStyle(fontSize: 14),
                   ),
                 ),

@@ -2,7 +2,7 @@ class AppUser {
   String name;
   String bloodGroup;
   String licenseNumber;
-  String contact;
+  String phoneNumber;
   String age;
   String emailID;
   // String dpURL;
@@ -16,7 +16,7 @@ class AppUser {
       'name': name,
       'bloodGroup': bloodGroup,
       'licenseNumber': licenseNumber,
-      'contact': contact,
+      'phoneNumber': phoneNumber,
       'age': age,
       'emailID': emailID,
       // 'dpURL': dpURL,
@@ -29,7 +29,7 @@ class AppUser {
     name = data['name'];
     bloodGroup = data['bloodGroup'];
     licenseNumber = data['licenseNumber'];
-    contact = data['contact'];
+    phoneNumber = data['phoneNumber'];
     age = data['age'];
     emailID = data['emailID'];
     // dpURL = data['dpURL'];
@@ -47,7 +47,7 @@ class VehicleUser {
   String aadharNumber;
   bool hasCompletedRegistration = false;
   String amount;
-  String ownerEmail;
+  String ownerphoneNumber;
 
   VehicleUser();
 
@@ -61,7 +61,7 @@ class VehicleUser {
       'aadharNumber': aadharNumber,
       'hasCompletedRegistration': hasCompletedRegistration,
       'amount': amount,
-      'ownerEmail': ownerEmail
+      'ownerphoneNumber': ownerphoneNumber
     };
   }
 
@@ -74,6 +74,6 @@ class VehicleUser {
     aadharNumber = data['aadharNumber'];
     hasCompletedRegistration = data['hasCompletedRegistration'];
     amount = data['amount'];
-    ownerEmail = data['ownerEmail'];
+    ownerphoneNumber = data['ownerPhoneNumber'];
   }
 }

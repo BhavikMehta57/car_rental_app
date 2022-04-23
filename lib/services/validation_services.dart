@@ -6,13 +6,13 @@ class ValidationService {
       return 'Please enter a valid email';
     }
 
-    // String pattern = r'^.+@[a-zA-Z]+\.{1}[a-zA-Z]+(\.{0,1}[a-zA-Z]+)$';
-    // RegExp regExp = new RegExp(pattern);
-    //
-    // if (!regExp.hasMatch(value)) {
-    //   // print('here');
-    //   return 'Please enter a valid email';
-    // }
+    String pattern = r'^.+@[a-zA-Z]+\.{1}[a-zA-Z]+(\.{0,1}[a-zA-Z]+)$';
+    RegExp regExp = new RegExp(pattern);
+
+    if (!regExp.hasMatch(value)) {
+      // print('here');
+      return 'Please enter a valid email';
+    }
 
     return null;
   }
@@ -159,7 +159,7 @@ class ValidationService {
       return 'Please enter a valid vehicle number';
     }
 
-    String pattern = r"^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$";
+    String pattern = r"^[A-Z]{2}\s[0-9]{2}\s[A-Z]{2}\s[0-9]{4}$";
     RegExp regExp = new RegExp(pattern);
 
     if (!regExp.hasMatch(value)) {
@@ -213,6 +213,25 @@ class ValidationService {
 
     if (!regExp.hasMatch(value)) {
       return 'Please enter a valid aadhar number';
+    }
+
+    return null;
+  }
+
+  String rentAmountValidator(String value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a valid rent amount';
+    }
+
+    if (value.length > 4) {
+      return 'The rent amount is too high';
+    }
+
+    String pattern = r'^[0-9]*$';
+    RegExp regExp = new RegExp(pattern);
+
+    if (!regExp.hasMatch(value)) {
+      return 'Please enter a valid rent amount';
     }
 
     return null;

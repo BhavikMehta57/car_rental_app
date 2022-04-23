@@ -164,7 +164,7 @@ class _DisplayMapState extends State<DisplayMap> {
                 child: ListTile(
                   leading: Icon(Icons.directions_car_rounded),
                   title: Text(
-                    'Book a ride',
+                    'Rent a car',
                     // style: TextStyle(fontSize: 1),
                   ),
                 ),
@@ -357,9 +357,9 @@ class _DisplayMapState extends State<DisplayMap> {
   Future<void> checkIfDocExists() async {
     try {
       var collectionRef = FirebaseFirestore.instance
-          .collection('users/${currentFirebaseUser.uid}/vehicle_details');
+          .collection('users/${currentFirebaseUser.phoneNumber}/vehicle_details');
 
-      var doc = await collectionRef.doc(currentFirebaseUser.uid).get();
+      var doc = await collectionRef.doc(currentFirebaseUser.phoneNumber).get();
       if (doc.exists) {
         exist = 'docexist';
       } else {

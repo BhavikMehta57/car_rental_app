@@ -1,6 +1,10 @@
+import 'package:car_rental_app/authentication/otp.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:car_rental_app/screens/home_page.dart';
 import 'package:car_rental_app/screens/signup_page.dart';
@@ -26,94 +30,132 @@ class _LoginPageState extends State<LoginPage> {
     scaffoldKey.currentState.showSnackBar(snackbar);
   }
 
-  var emailIdController = TextEditingController();
+  final _firestore = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
+  var phoneController = TextEditingController();
   var passwordController = TextEditingController();
 
-  Widget _buildLogin() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 30),
-      child: Column(
-        children: [
-          InputTextField(
-            controller: emailIdController,
-            label: 'Email-Id',
-            icon: Icon(Icons.email_outlined),
-          ),
-          InputTextField(
-            controller: passwordController,
-            label: 'Password',
-            icon: Icon(Icons.lock),
-          ),
-          SizedBox(
-            height: 50,
-          ),
-          GestureDetector(
-            onTap: () async {
-              // network connectivity
-              var connectivityResult = await Connectivity().checkConnectivity();
-              if (connectivityResult != ConnectivityResult.mobile &&
-                  connectivityResult != ConnectivityResult.wifi) {
-                showSnackBar('No Internet connectivity');
-                return;
-              }
+  Future<void> loginUser(BuildContext context) async {
+    String phone = "+91" + phoneController.text;
+    try {
+      print("Getting ds...");
+      DocumentSnapshot ds =
+      await _firestore.collection("users").doc(phone).get();
+      print("Got ds...");
+      if (!ds.exists) {
+        final snackBar = SnackBar(
+          content: Text('User does not exist!'),
+          duration: Duration(seconds: 3),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        return;
+      } else {
+        String pass = ds.data()["Password"];
+        bool isBlocked = ds.data()["isBlocked"];
 
-              if (!emailIdController.text.contains('@')) {
-                showSnackBar('Please provide a valid email address');
-              }
+        if (pass == passwordController.text) {
+          //Check user type
+          //Prevent Log In if account is blocked
+          if (isBlocked) {
+            final snackBar = SnackBar(
+              content: Text('This account has been blocked'),
+              duration: Duration(seconds: 3),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            return;
+          }
+          // Password is correct, hence send OTP
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return Otp(
+                    phone: phone,
+                    onVerificationFailure: () {
+                      print("OTP Verification Failed");
+                      final snackBar = SnackBar(
+                        content: Text('OTP verification failed !'),
+                        duration: Duration(seconds: 3),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      return;
+                    },
+                    onVerificationSuccess: (AuthCredential credential) async {
+                      print("OTP Verification successful !");
+                      final result =
+                      await _auth.signInWithCredential(credential);
 
-              if (passwordController.text.length < 6) {
-                showSnackBar('Please provide a password of length more than 6');
-              }
-              BuildContext dialogContext;
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (BuildContext context) {
-                  dialogContext = context;
-                  return ProgressDialog(
-                    status: 'Logging you in...',
-                  );
-                },
-              );
-              context
-                  .read<AuthenticationService>()
-                  .signIn(
-                    email: emailIdController.text.trim(),
-                    password: passwordController.text.trim(),
-                  )
-                  .then((value) => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) {
-                          return HomePage();
-                        }),
-                      ));
-              Navigator.pop(dialogContext);
-            },
-            child: CustomButton(
-              text: 'Login',
+                      User user = result.user;
+
+                      if (user != null) {
+                        print("User Not Null, Loggin In, Redirecing To Home");
+                        Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (context) => HomePage(),
+                            ),
+                                (Route<dynamic> route) => false);
+                      } else {
+                        print("Auth Failed! (Login)");
+                      }
+                    },
+                    verifyButtonOnTap:
+                        (String verificationId, String enteredCode) async {
+                      try {
+                        final AuthCredential credential =
+                        PhoneAuthProvider.credential(
+                            verificationId: verificationId,
+                            smsCode: enteredCode);
+
+                        final UserCredential userCreds =
+                        await _auth.signInWithCredential(credential);
+                        final User currentUser =
+                            FirebaseAuth.instance.currentUser;
+
+                        assert(userCreds.user.uid == currentUser.uid);
+
+                        if (userCreds.user != null) {
+                          print(
+                              "User Not Null, Logging In, Redirecing To Home");
+                          Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (context) => HomePage(),
+                              ),
+                                  (Route<dynamic> route) => false);
+                          return "Success";
+                        } else {
+                          print("Auth Failed! (Login, from verify callback)");
+                          return "Some error occured";
+                        }
+                      } catch (e) {
+                        print("Here is the catched error");
+                        print(e);
+                        if (e is PlatformException) return (e.code);
+                        return "Invalid OTP!";
+                      }
+                    });
+              },
             ),
-          ),
-          Text("\nDon't have any account?"),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) {
-                  return SignUpPage();
-                }),
-              );
-            },
-            child: Text(
-              'SignUp here',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-            ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-        ],
-      ),
-    );
+          );
+        } else {
+          //Passwords don't match, show error
+          final snackBar = SnackBar(
+            content: Text('Invalid Credentials !'),
+            duration: Duration(seconds: 3),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          return;
+        }
+      }
+    } catch (e) {
+      print(e);
+      final snackBar = SnackBar(
+        content:
+        Text('Some error occurred! Please check you internet connection.'),
+        duration: Duration(seconds: 3),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
+    }
   }
 
   @override
@@ -144,10 +186,10 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     children: [
                       InputTextField(
-                        controller: emailIdController,
-                        label: 'Email-Id',
+                        controller: phoneController,
+                        label: 'Phone Number',
                         obscure: false,
-                        icon: Icon(Icons.email_outlined),
+                        icon: Icon(Icons.phone_android_outlined),
                       ),
                       InputTextField(
                         controller: passwordController,
@@ -169,9 +211,9 @@ class _LoginPageState extends State<LoginPage> {
                             return;
                           }
 
-                          if (!emailIdController.text.contains('@')) {
+                          if (phoneController.text.length != 10) {
                             showSnackBar(
-                                'Please provide a valid email address');
+                                'Please provide a valid phone number');
                           }
 
                           if (passwordController.text.length < 6) {
@@ -185,22 +227,11 @@ class _LoginPageState extends State<LoginPage> {
                             builder: (BuildContext context) {
                               dialogContext = context;
                               return ProgressDialog(
-                                status: 'Logging you in...',
+                                status: 'Sending OTP...',
                               );
                             },
                           );
-                          context
-                              .read<AuthenticationService>()
-                              .signIn(
-                                email: emailIdController.text.trim(),
-                                password: passwordController.text.trim(),
-                              )
-                              .then((value) => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) {
-                                      return HomePage();
-                                    }),
-                                  ));
+                          await loginUser(context);
                           Navigator.pop(dialogContext);
                         },
                         child: CustomButton(
