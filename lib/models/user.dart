@@ -42,6 +42,9 @@ class VehicleUser {
   String vehicleId;
   String modelName;
   String vehicleNumber;
+  String vehicleLoc;
+  String vehicleLatitude;
+  String vehicleLongitude;
   String ownerName;
   String color;
   String vehicleImg;
@@ -57,6 +60,9 @@ class VehicleUser {
       'vehicleId': vehicleId,
       'modelName': modelName,
       'vehicleNumber': vehicleNumber,
+      'vehicleLocation': vehicleLoc,
+      'vehicleLatitude': vehicleLatitude,
+      'vehicleLongitude': vehicleLongitude,
       'ownerName': ownerName,
       'color': color,
       'vehicleImg' : vehicleImg,
@@ -71,6 +77,9 @@ class VehicleUser {
     vehicleId = data['vehicleId'];
     modelName = data['modelName'];
     vehicleNumber = data['vehicleNumber'];
+    vehicleLoc = data['vehicleLocation'];
+    vehicleLatitude = data['vehicleLatitude'];
+    vehicleLongitude = data['vehicleLongitude'];
     ownerName = data['ownerName'];
     color = data['color'];
     vehicleImg = data['vehicleImg'];

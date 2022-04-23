@@ -97,6 +97,8 @@ class FirebaseFunctions {
       CollectionReference collectionReference = FirebaseFirestore.instance
           .collection('users/${currentUser.phoneNumber}/vehicle_details');
 
+      await FirebaseFirestore.instance.collection("vehicles").doc(data['vehicleId']).set(data);
+
       await collectionReference
           .doc(data['vehicleId'])
           .set(data)
