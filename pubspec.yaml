@@ -64,6 +64,19 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+#  assets:
+#    - images/
+
+  fonts:
+    - family: MuseoModerno
+      fonts:
+        - asset: fonts/MuseoModerno-ExtraLight.ttf
+    - family: OpenSans
+      fonts:
+        - asset: fonts/OpenSans-Regular.ttf
+    - family: Inter
+      fonts:
+        - asset: fonts/Inter-Light.ttf
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
