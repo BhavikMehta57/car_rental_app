@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
@@ -100,8 +101,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       print('Nulladdress');
     }
     print('Your address::' + address);
-    startGeofireListener();
+    markerAll();
+
   }
+
+ void markerAll()async {
+
+    await FirebaseFirestore.instance.collection('vehicles').get().then((value){
+      for(int i=0;i<value.docs.length;i++){
+        Marker carMarker = Marker(
+          markerId: MarkerId(value.docs[i].data()['vehicleId']),
+          position: LatLng(double.parse(value.docs[i].data()['vehicleLatitude']), double.parse(value.docs[i].data()['vehicleLongitude'])),
+        );
+        setState(() {
+          markerSet.add(carMarker);
+        });
+
+      }
+
+    });
+
+
+ }
 
   void startGeofireListener() {
     // print(currentPosition);
@@ -227,6 +248,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     locatePosition();
     super.initState();
+    markerAll();
   }
 
   @override
