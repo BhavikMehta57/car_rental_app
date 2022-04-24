@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -48,8 +49,13 @@ class AssistantMethods {
 
   static Future<DirectionDetails> obtainPlaceDirectionDetails(
       LatLng initialPosition, LatLng finalPosition) async {
-    String directionUrl =
-        "https://maps.googleapis.com/maps/api/directions/json?origin=${initialPosition.latitude},${initialPosition.longitude}&destination=${finalPosition.latitude},${finalPosition.longitude}&key=$geocodingApi";
+    String directionUrl = "";
+    if(kIsWeb){
+      directionUrl = "https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/directions/json?origin=${initialPosition.latitude},${initialPosition.longitude}&destination=${finalPosition.latitude},${finalPosition.longitude}&key=$geocodingApi";
+    }
+    else{
+      directionUrl = "https://maps.googleapis.com/maps/api/directions/json?origin=${initialPosition.latitude},${initialPosition.longitude}&destination=${finalPosition.latitude},${finalPosition.longitude}&key=$geocodingApi";
+    }
 
     var res = await RequestAssistant.getRequest(directionUrl);
 

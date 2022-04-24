@@ -1,12 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:nanoid/nanoid.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:toast/toast.dart';
 import 'package:car_rental_app/globalvariables.dart';
 import 'package:car_rental_app/models/user.dart';
 import 'package:car_rental_app/screens/ride_history_page.dart';
+import 'package:web3dart/web3dart.dart';
+import 'package:web_socket_channel/io.dart';
 import '../services/firebase_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -33,19 +36,19 @@ class PaymentPage extends StatefulWidget {
 }
 
 class _PaymentPageState extends State<PaymentPage> {
-  Razorpay razorpay;
+  // Razorpay razorpay;
   String id;
 
   @override
   void initState() {
     super.initState();
-    razorpay = new Razorpay();
-
-    razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlerPaymentSuccess);
-    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlerErrorFailure);
-    razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handlerExternalWallet);
-
-    openCheckOut();
+    // razorpay = new Razorpay();
+    //
+    // razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlerPaymentSuccess);
+    // razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlerErrorFailure);
+    // razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handlerExternalWallet);
+    //
+    // openCheckOut();
     id = nanoid(10).toString();
   }
   //TODO : Remove RAZORPAY KEY Afterwards
@@ -56,14 +59,27 @@ class _PaymentPageState extends State<PaymentPage> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    razorpay.clear();
   }
 
-  void handlerPaymentSuccess() {
-    Toast.show('Payment Successful', context);
-    print('handlerPaymentSuccess');
-    // saveUserHistory();
-  }
+  // void sendEther() async {
+  // Web3Client client = Web3Client(rpcUrl, Client(), socketConnector: (){
+  //   return IOWebSocketChannel.connect(wsUrl).cast<String>();
+  // });
+  //
+  // String privateKey = "87eac9cb1b3f2a1d11894e6a66d9e4f06f3cca746f894a87cdf83fba5518c381";
+  //
+  // Credentials credentials = await client.credentialsFromPrivateKey(privateKey);
+  // EthereumAddress receiver = EthereumAddress.fromHex("0xA1b02b776a136f6922b7A91A47089b9ee69eF631");
+  // EthereumAddress ownAddress = await credentials.extractAddress();
+  //
+  // client.sendTransaction(credentials, Transaction(from: ownAddress, to: receiver, value: EtherAmount.fromUnitAndValue(EtherUnit.ether, etherAmount)));
+  // }
+
+  // void handlerPaymentSuccess() {
+  //   Toast.show('Payment Successful', context);
+  //   print('handlerPaymentSuccess');
+  //   // saveUserHistory();
+  // }
 
   void saveUserHistory() {
     print("BookedCar :: " + widget.bookedCar);
@@ -121,35 +137,35 @@ class _PaymentPageState extends State<PaymentPage> {
 
     }
 
-  void handlerErrorFailure() {
-    Toast.show('Payment Failed', context);
-    print('handlerErrorFailure');
-  }
-
-  void handlerExternalWallet() {
-    print('handlerExternalWallet');
-  }
-
-  void openCheckOut() {
-    var options = {
-      'key': "rzp_test_l8yCRSz3UfiXKB",
-      'amount': (int.parse(widget.amount) * 100).toString(),
-      'description': 'Your ride',
-      "prefill": {
-        "contact": '9876543210',
-        "email": FirebaseAuth.instance.currentUser.email,
-      },
-      "external": {
-        "wallets": ["paytm"]
-      }
-    };
-
-    try {
-      razorpay.open(options);
-    } catch (e) {
-      print(e.toString());
-    }
-  }
+  // void handlerErrorFailure() {
+  //   Toast.show('Payment Failed', context);
+  //   print('handlerErrorFailure');
+  // }
+  //
+  // void handlerExternalWallet() {
+  //   print('handlerExternalWallet');
+  // }
+  //
+  // void openCheckOut() {
+  //   var options = {
+  //     'key': "rzp_test_l8yCRSz3UfiXKB",
+  //     'amount': (int.parse(widget.amount) * 100).toString(),
+  //     'description': 'Your ride',
+  //     "prefill": {
+  //       "contact": '9876543210',
+  //       "email": FirebaseAuth.instance.currentUser.email,
+  //     },
+  //     "external": {
+  //       "wallets": ["paytm"]
+  //     }
+  //   };
+  //
+  //   try {
+  //     razorpay.open(options);
+  //   } catch (e) {
+  //     print(e.toString());
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {

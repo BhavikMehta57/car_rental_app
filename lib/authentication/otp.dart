@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:car_rental_app/authentication/web_auth.dart';
+import 'package:car_rental_app/screens/home_page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:car_rental_app/widgets/widgets.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -30,6 +32,7 @@ class _OtpState extends State<Otp> {
   TextEditingController _codeController = TextEditingController();
   int _counter = 59;
   Timer _timer;
+  var temp;
 
   void _startTimer() {
     _counter = 59;
@@ -69,13 +72,17 @@ class _OtpState extends State<Otp> {
     print("Indside Send OPT");
     try {
       if(kIsWeb){
-        _auth.signInWithPhoneNumber(phone);
-        ConfirmationResult confirmationResult = await _auth.signInWithPhoneNumber(phone, RecaptchaVerifier(
-          container: 'reCaptcha',
-          size: RecaptchaVerifierSize.compact,
-          theme: RecaptchaVerifierTheme.dark,
-        ));
-        UserCredential userCredential = await confirmationResult.confirm('123456');
+        temp = await FirebaseAuthentication().sendOTP(phone);
+        // ConfirmationResult confirmationResult = await _auth.signInWithPhoneNumber(phone, RecaptchaVerifier(
+        //   container: '__ff-recaptcha-container',
+        //   size: RecaptchaVerifierSize.compact,
+        //   theme: RecaptchaVerifierTheme.dark,
+        // ));
+        // print(confirmationResult);
+        // UserCredential userCredential = await confirmationResult.confirm('123456');
+        // userCredential.additionalUserInfo.isNewUser
+        //     ? print("Successful Authentication")
+        //     : print("User already exists");
       }
       else{
         _auth.verifyPhoneNumber(
@@ -176,11 +183,7 @@ class _OtpState extends State<Otp> {
                     sendOTP();
                   }),
                   16.height,
-                  isLoading
-                      ?
-                  CircularProgressIndicator()
-                      :
-                  Padding(
+                  if (isLoading) CircularProgressIndicator() else Padding(
                     padding: const EdgeInsets.fromLTRB(40, 0, 40, 0),
                     child: GestureDetector(
                       child: CustomButton(
@@ -200,18 +203,35 @@ class _OtpState extends State<Otp> {
                           setState(() {
                             isLoading=true;
                           });
-                          String result = await widget.verifyButtonOnTap(verificationId, code);
-                          setState(() {
-                            isLoading=false;
-                          });
+                          if(kIsWeb){
+                            String result = await widget.verifyButtonOnTap(temp.verificationId, code);
+                            setState(() {
+                              isLoading=false;
+                            });
 
-                          if(result != "Success"){
-                            final snackBar = SnackBar(
-                              content: Text(result),
-                              duration: Duration(seconds: 3),
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                            return;
+                            if(result != "Success"){
+                              final snackBar = SnackBar(
+                                content: Text(result),
+                                duration: Duration(seconds: 3),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              return;
+                            }
+                          }
+                          else{
+                            String result = await widget.verifyButtonOnTap(verificationId, code);
+                            setState(() {
+                              isLoading=false;
+                            });
+
+                            if(result != "Success"){
+                              final snackBar = SnackBar(
+                                content: Text(result),
+                                duration: Duration(seconds: 3),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              return;
+                            }
                           }
                         }
                       },

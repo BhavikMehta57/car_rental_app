@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
 import 'package:provider/provider.dart';
 import 'package:car_rental_app/assistant/request.dart';
 import 'package:car_rental_app/configMaps.dart';
@@ -7,6 +8,7 @@ import 'package:car_rental_app/dataHandler/appdata.dart';
 import 'package:car_rental_app/models/address.dart';
 import 'package:car_rental_app/models/placePrediction.dart';
 import 'package:car_rental_app/widgets/widgets.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class SearchDropOffLocation extends StatefulWidget {
   @override
@@ -36,7 +38,7 @@ class _SearchDropOffLocationState extends State<SearchDropOffLocation> {
               child: Column(
                 children: [
                   CustomBackButton(pageHeader: 'Search Destination'),
-                  SizedBox(height: 30),
+                  SizedBox(height: 10),
                   Container(
                     width: MediaQuery.of(context).size.width * 0.85,
                     child: Padding(
@@ -105,23 +107,28 @@ class _SearchDropOffLocationState extends State<SearchDropOffLocation> {
   }
 
   void findPlace(String placeName) async {
-    if (placeName.length > 0) {
-      String autoCompleteUrl =
-          'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$placeName&key=$geocodingApi&components=country:in';
-      var res = await RequestAssistant.getRequest(autoCompleteUrl);
 
-      if (res == 'failed') {
-        return;
-      }
-      if (res['status'] == 'OK') {
-        var predictions = res['predictions'];
-        var placeList = (predictions as List)
-            .map((e) => PlacePrediction.fromJson(e))
-            .toList();
-        setState(() {
-          placePredictionList = placeList;
-        });
-      }
+    String autoCompleteUrl = "";
+    if(kIsWeb) {
+      autoCompleteUrl = 'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$placeName&key=$geocodingApi&components=country:in';
+    }
+    else{
+      autoCompleteUrl = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$placeName&key=$geocodingApi&components=country:in';
+    }
+
+    var res = await RequestAssistant.getRequest(autoCompleteUrl);
+
+    if (res == 'failed') {
+      return;
+    }
+    if (res['status'] == 'OK') {
+      var predictions = res['predictions'];
+      var placeList = (predictions as List)
+          .map((e) => PlacePrediction.fromJson(e))
+          .toList();
+      setState(() {
+        placePredictionList = placeList;
+      });
     }
   }
 }
@@ -185,8 +192,14 @@ class PredictionTile extends StatelessWidget {
           ProgressDialog(status: 'Setting Dropoff location\nPlease Wait....'),
     );
 
-    String placeDetailsUrl =
-        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$geocodingApi';
+    String placeDetailsUrl = "";
+
+    if(kIsWeb){
+      placeDetailsUrl = 'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$geocodingApi';
+    }
+    else{
+      placeDetailsUrl = 'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$geocodingApi';
+    }
 
     var res = await RequestAssistant.getRequest(placeDetailsUrl);
 
