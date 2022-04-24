@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:car_rental_app/globalvariables.dart';
@@ -11,69 +12,9 @@ class RideHistory extends StatefulWidget {
 }
 
 class _RideHistoryState extends State<RideHistory> {
-  DatabaseReference dbref;
-  List lists = [];
-
-  showAlertDialog(BuildContext context, int index) {
-    // set up the buttons
-    Widget cancelButton = FlatButton(
-      color: Colors.black,
-      child: Text(
-        "Back",
-        style: TextStyle(
-          color: Colors.white,
-        ),
-      ),
-      onPressed: () {
-        Navigator.pop(context);
-      },
-    );
-    Widget continueButton = FlatButton(
-      color: Colors.red,
-      child: Text("Yes, cancel ride",
-          style: TextStyle(
-            color: Colors.white,
-          )),
-      onPressed: () {
-        print(lists[index]['ownerId']);
-        dbref = FirebaseDatabase.instance.reference().child(
-            "user_history/${currentFirebaseUser.phoneNumber}/${lists[index]['ownerId']}");
-        dbref.onDisconnect();
-        dbref.remove();
-        // Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) {
-            return HomePage();
-          }),
-        );
-      },
-    );
-
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: Text("hopOn"),
-      content: Text("Would you like to cancel your ride?"),
-      actions: [
-        cancelButton,
-        continueButton,
-      ],
-    );
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
 
   @override
   void initState() {
-    dbref = FirebaseDatabase.instance
-        .reference()
-        .child("user_history/${currentFirebaseUser.phoneNumber}");
     super.initState();
   }
 
@@ -84,155 +25,153 @@ class _RideHistoryState extends State<RideHistory> {
         padding: EdgeInsets.symmetric(horizontal: 20),
         children: <Widget>[
           CustomBackButton(pageHeader: 'My rides'),
-          StreamBuilder(
-            stream: FirebaseFirestore.instance.collection('users').doc(currentFirebaseUser.phoneNumber).collection('UserHistory').snapshots(),
-            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (!snapshot.hasData) {
-                print("No Records Found");
-                return Column(
-                  children: [
-                    SizedBox(height: MediaQuery.of(context).size.height*0.2,),
-                    CircularProgressIndicator(),
-                  ],
-                );                  }
-              else if(snapshot.connectionState == ConnectionState.waiting){
-                print("in process");
-                return Column(
-                  children: [
-                    SizedBox(height: MediaQuery.of(context).size.height*0.2,),
-                    CircularProgressIndicator(),
-                  ],
-                );
-
-              }
-              else{
-                return new ListView.builder(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.vertical,
-                  itemCount: lists.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Container(
-                      height: 500,
-                      child: Column(
-                        children: <Widget>[
+          SizedBox(
+            height: 10,
+          ),
+          Container(
+            height: 450,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(25),),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 15.0,
+                    spreadRadius: 0.5,
+                    offset: Offset(0.7, 0.7),
+                  ),
+                ]
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              child: StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection("users")
+                      .doc(FirebaseAuth.instance.currentUser.phoneNumber)
+                      .collection("UserHistory")
+                      .snapshots()
+                  ,
+                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+                    if(!snapshot.hasData){
+                      print("Connection state: has no data");
+                      return Column(
+                        children: [
                           SizedBox(
-                            height: 30,
+                            height:MediaQuery.of(context).size.height*0.2,
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SpecificationWidget(
-                                text: lists[index]["modelName"],
-                                helpText: "Your car",
-                              ),
-                              SpecificationWidget(
-                                text: lists[index]["color"],
-                                helpText: "Car's color",
-                              ),
-                              SpecificationWidget(
-                                text: lists[index]["vehicleNumber"],
-                                helpText: 'Car number',
-                              ),
-                              SpecificationWidget(
-                                text: lists[index]["ownerName"],
-                                helpText: 'Owner name',
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 40,
-                          ),
-                          SpecificationWidget(
-                            text: lists[index]["pickUp"],
-                            helpText: 'Pickup location',
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          SpecificationWidget(
-                            text: lists[index]["dropOff"],
-                            helpText: 'DropOff location',
-                          ),
-                          SizedBox(
-                            height: 40,
-                          ),
-                          Row(
-                            children: [
-                              Text('From\t\t'),
-                              Text(
-                                lists[index]["pickupDate"],
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                              Text('\t\tTo\t\t'),
-                              Text(
-                                lists[index]["dropofDate"],
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 30,
-                          ),
-                          Row(
-                            children: [
-                              Text('Amount Paid:\t\t'),
-                              Text(
-                                '₹ ${lists[index]["amount"]}\t\t\t',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                              Icon(Icons.check_circle),
-                              SizedBox(
-                                width: 50,
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  showAlertDialog(context, index);
-                                },
-                                child: FlatButton(
-                                  color: Colors.red,
-                                  child: Text("Cancel ride",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                      )),
-                                  onPressed: () {
-                                    showAlertDialog(context, index);
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 40,
-                          ),
-                          GestureDetector(
-                              onTap: () {
-                                showAlertDialog(context, index);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) {
-                                    return HomePage();
-                                  }),
-                                );
-                              },
-                              child: CustomButton(
-                                text: 'Book a ride',
-                              )),
+                          CircularProgressIndicator(),
                         ],
-                      ),
-                    );
-                  },
-                );
-              }
-              return Center(
-                child: CircularProgressIndicator(
-                  backgroundColor: Colors.white,
-                ),
-              );
-            },
-          )
+                      );
+                    }
+                    else if(snapshot.connectionState == ConnectionState.waiting){
+                      print("Connection state: waiting");
+                      return Column(children: [
+                        SizedBox(
+                          height:MediaQuery.of(context).size.height*0.2,
+                        ),
+                        CircularProgressIndicator(),
+                      ],
+                      );
+                    }
+                    else{
+                      print("Connection state: hasdata");
+                      if(snapshot.data.docs.length == 0){
+                        return Center(
+                          child: Text("No Cars Registered Yet"),
+                        );
+                      }
+                      else{
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.vertical,
+                          itemCount: snapshot.data.docs.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return Container(
+                              height: 400,
+                              child: Column(
+                                children: <Widget>[
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      SpecificationWidget(
+                                        text: snapshot.data.docs[index]["modelName"],
+                                        helpText: "Your car",
+                                      ),
+                                      SpecificationWidget(
+                                        text: snapshot.data.docs[index]["color"],
+                                        helpText: "Car's color",
+                                      ),
+                                      SpecificationWidget(
+                                        text: snapshot.data.docs[index]["vehicleNumber"],
+                                        helpText: 'Car number',
+                                      ),
+                                      SpecificationWidget(
+                                        text: snapshot.data.docs[index]["ownerName"],
+                                        helpText: 'Owner name',
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 40,
+                                  ),
+                                  SpecificationWidget(
+                                    text: snapshot.data.docs[index]["pickUp"],
+                                    helpText: 'Pickup location',
+                                  ),
+                                  SizedBox(
+                                    height: 20,
+                                  ),
+                                  SpecificationWidget(
+                                    text: snapshot.data.docs[index]["dropOff"],
+                                    helpText: 'DropOff location',
+                                  ),
+                                  SizedBox(
+                                    height: 40,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text('From\t\t'),
+                                      Text(
+                                        snapshot.data.docs[index]["pickupDate"],
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold, fontSize: 14),
+                                      ),
+                                      Text('\t\tTo\t\t'),
+                                      Text(
+                                        snapshot.data.docs[index]["dropofDate"],
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold, fontSize: 14),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 30,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text('Amount Paid:\t\t'),
+                                      Text(
+                                        '₹ ${snapshot.data.docs[index]["amount"]}\t\t\t',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold, fontSize: 14),
+                                      ),
+                                      Icon(Icons.check_circle),
+                                      SizedBox(
+                                        width: 50,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      }
+                    }
+                  }
+              ),
+            ),
+          ),
         ],
       ),
     );
