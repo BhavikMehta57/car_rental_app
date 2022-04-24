@@ -1,3 +1,5 @@
+import 'package:car_rental_app/ganache/sendEther.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:car_rental_app/models/user.dart';
@@ -9,7 +11,7 @@ import 'package:web_socket_channel/io.dart';
 import '../widgets/widgets.dart';
 
 class DetailsCar extends StatefulWidget {
-  final AsyncSnapshot docSnapshot;
+  final QueryDocumentSnapshot docSnapshot;
   final String bookedCar;
   String finalDestination;
   String initialLocation;
@@ -36,24 +38,11 @@ class _DetailsCarState extends State<DetailsCar> {
   double etherAmount = 0;
   String rpcUrl = "http://127.0.0.1:7545";
   String wsUrl = "ws://127.0.0.1:7545/";
-  void sendEther() async {
-    Web3Client client = Web3Client(rpcUrl, Client(), socketConnector: (){
-      return IOWebSocketChannel.connect(wsUrl).cast<String>();
-    });
-
-    String privateKey = "87eac9cb1b3f2a1d11894e6a66d9e4f06f3cca746f894a87cdf83fba5518c381";
-
-    Credentials credentials = await client.credentialsFromPrivateKey(privateKey);
-    EthereumAddress receiver = EthereumAddress.fromHex("0xA1b02b776a136f6922b7A91A47089b9ee69eF631");
-    EthereumAddress ownAddress = await credentials.extractAddress();
-    print(ownAddress);
-    client.sendTransaction(credentials, Transaction(from: ownAddress, to: receiver, value: EtherAmount.fromUnitAndValue(EtherUnit.ether, BigInt.from(etherAmount))));
-  }
 
   @override
   void initState() {
     // TODO: implement initState
-    etherAmount = double.parse((widget.rideCost + (int.parse(widget.docSnapshot.data['amount']))).toString())/236474;
+    //etherAmount = double.parse((widget.rideCost + (int.parse(widget.docSnapshot.data['amount']))).toString())/236474;
     super.initState();
   }
   @override
@@ -85,14 +74,14 @@ class _DetailsCarState extends State<DetailsCar> {
                       height: 20,
                     ),
                     Text(
-                      widget.docSnapshot.data['modelName'],
+                      widget.docSnapshot.data()['modelName'],
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 30,
                       ),
                     ),
                     Text(
-                      widget.docSnapshot.data['ownerName'].toUpperCase(),
+                      widget.docSnapshot.data()['ownerName'].toUpperCase(),
                       style: TextStyle(
                         color: Color.fromRGBO(27, 34, 46, 1),
                         fontSize: 12,
@@ -103,7 +92,7 @@ class _DetailsCarState extends State<DetailsCar> {
                       height: 20,
                     ),
                     Image.network(
-                      widget.docSnapshot.data['vehicleImg'],
+                      widget.docSnapshot.data()['vehicleImg'],
                       width: MediaQuery.of(context).size.width,
                     ),
                   ],
@@ -129,7 +118,7 @@ class _DetailsCarState extends State<DetailsCar> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SpecificationWidget(
-                        text: '₹ ' + widget.docSnapshot.data['amount'],
+                        text: '₹ ' + widget.docSnapshot.data()['amount'],
                         helpText: 'Car rent',
                       ),
                       SpecificationWidget(
@@ -139,7 +128,7 @@ class _DetailsCarState extends State<DetailsCar> {
                       SpecificationWidget(
                         text: '₹ ' +
                             (widget.rideCost +
-                                    (int.parse(widget.docSnapshot.data['amount'])))
+                                    (int.parse(widget.docSnapshot.data()['amount'])))
                                 .toString(),
                         helpText: 'Total cost',
                       ),
@@ -152,7 +141,7 @@ class _DetailsCarState extends State<DetailsCar> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SpecificationWidget(
-                        text: widget.docSnapshot.data['color'],
+                        text: widget.docSnapshot.data()['color'],
                         helpText: "Car's Color",
                       ),
                       SpecificationWidget(
@@ -175,7 +164,7 @@ class _DetailsCarState extends State<DetailsCar> {
               padding: EdgeInsets.all(20.0),
               child: GestureDetector(
                 onTap: () {
-                  sendEther();
+                  Ganache().sendEther(etherAmount);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -185,7 +174,7 @@ class _DetailsCarState extends State<DetailsCar> {
                         finalDestination: widget.finalDestination,
                         bookedCar: widget.bookedCar,
                         amount: (widget.rideCost +
-                                (int.parse(widget.docSnapshot.data['amount'])))
+                                (int.parse(widget.docSnapshot.data()['amount'])))
                             .toString(),
                         pickupDate: widget.pickupDate,
                         dropOffDate: widget.dropOffDate,

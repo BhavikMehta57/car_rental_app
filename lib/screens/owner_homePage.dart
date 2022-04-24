@@ -390,13 +390,104 @@ class _DisplayMapState extends State<DisplayMap> {
                                                   mainAxisSize: MainAxisSize.max,
                                                   crossAxisAlignment: CrossAxisAlignment.center,
                                                   children: <Widget>[
-                                                    Text("Model Name: ${snapshot.data.docs[index]["modelName"]}"),
-                                                    Text("Car Number: ${snapshot.data.docs[index]["vehicleNumber"]}"),
-                                                    Text("Vehicle Colour: ${snapshot.data.docs[index]["color"]}"),
+                                                    Text("${snapshot.data.docs[index]["modelName"]}"),
+                                                    Text("${snapshot.data.docs[index]["vehicleNumber"]}"),
+                                                    Text("${snapshot.data.docs[index]["color"]}"),
                                                   ],
                                                 ),
                                               ),
-                                              Icon(Icons.remove),
+                                              Column(
+                                                mainAxisSize: MainAxisSize.max,
+                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                children: <Widget>[
+                                                  snapshot.data.docs[index]["status"] == "Available"
+                                                  ?
+                                                      Column(
+                                                        children: [
+                                                          Container(
+                                                            decoration: BoxDecoration(
+                                                              color: Colors.green,
+                                                              border: Border.all(color: Colors.transparent),
+                                                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                            ),
+                                                            child: Padding(
+                                                              padding: const EdgeInsets.all(8.0),
+                                                              child: Align(
+                                                                alignment: Alignment.center,
+                                                                child: Text(
+                                                                  'Available',
+                                                                  textAlign: TextAlign.center,
+                                                                  style: TextStyle(
+                                                                    fontSize: 15,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      )
+                                                  :
+                                                      Column(
+                                                        children: [
+                                                          Container(
+                                                            decoration: BoxDecoration(
+                                                              color: Colors.red,
+                                                              border: Border.all(color: Colors.transparent),
+                                                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                            ),
+                                                            child: Padding(
+                                                              padding: const EdgeInsets.all(8.0),
+                                                              child: Align(
+                                                                alignment: Alignment.center,
+                                                                child: Text(
+                                                                  'Rented',
+                                                                  textAlign: TextAlign.center,
+                                                                  style: TextStyle(
+                                                                    fontSize: 15,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          SizedBox(
+                                                            height: 5,
+                                                          ),
+                                                          GestureDetector(
+                                                            onTap: () async {
+                                                              await FirebaseFirestore.instance.collection("users").doc(currentFirebaseUser.phoneNumber).collection("vehicle_details").doc(snapshot.data.docs[index]["vehicleId"]).update(
+                                                                  {
+                                                                    'status': "Available"
+                                                                  });
+                                                              await FirebaseFirestore.instance.collection("vehicles").doc(snapshot.data.docs[index]["vehicleId"]).update(
+                                                                  {
+                                                                    'status': "Available"
+                                                                  });
+                                                            },
+                                                            child: Container(
+                                                              decoration: BoxDecoration(
+                                                                color: Colors.green,
+                                                                border: Border.all(color: Colors.transparent),
+                                                                borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                              ),
+                                                              child: Padding(
+                                                                padding: const EdgeInsets.all(4.0),
+                                                                child: Align(
+                                                                  alignment: Alignment.center,
+                                                                  child: Text(
+                                                                    'Rent again',
+                                                                    textAlign: TextAlign.center,
+                                                                    style: TextStyle(
+                                                                      fontSize: 12,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                ],
+                                              ),
                                             ],
                                           )
                                       ),

@@ -9,20 +9,11 @@ import 'package:web_socket_channel/io.dart';
 
 import '../widgets/widgets.dart';
 
-class SendEther extends StatefulWidget {
-
-  @override
-  _SendEtherState createState() => _SendEtherState();
-}
-
-var totalCost;
-
-class _SendEtherState extends State<SendEther> {
-
-  double etherAmount = 0;
+class Ganache {
   String rpcUrl = "http://127.0.0.1:7545";
   String wsUrl = "ws://127.0.0.1:7545/";
-  void sendEther() async {
+
+  void sendEther(etherAmount) async {
     Web3Client client = Web3Client(rpcUrl, Client(), socketConnector: (){
       return IOWebSocketChannel.connect(wsUrl).cast<String>();
     });
@@ -36,15 +27,4 @@ class _SendEtherState extends State<SendEther> {
     client.sendTransaction(credentials, Transaction(from: ownAddress, to: receiver, value: EtherAmount.fromUnitAndValue(EtherUnit.ether, BigInt.from(etherAmount))));
   }
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    etherAmount = 1;
-    sendEther();
-    super.initState();
-  }
-  @override
-  Widget build(BuildContext context) {
-    return LoginPage();
-  }
 }

@@ -52,6 +52,7 @@ class VehicleUser {
   bool hasCompletedRegistration = false;
   String amount;
   String ownerphoneNumber;
+  String status;
 
   VehicleUser();
 
@@ -69,7 +70,8 @@ class VehicleUser {
       'aadharNumber': aadharNumber,
       'hasCompletedRegistration': hasCompletedRegistration,
       'amount': amount,
-      'ownerphoneNumber': ownerphoneNumber
+      'ownerphoneNumber': ownerphoneNumber,
+      'status': status
     };
   }
 

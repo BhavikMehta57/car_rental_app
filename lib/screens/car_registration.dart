@@ -73,6 +73,7 @@ class _VehicleDetailsState extends State<VehicleDetails> {
     owner.hasCompletedRegistration = true;
     owner.amount = _rentAmount.text;
     owner.ownerphoneNumber = FirebaseAuth.instance.currentUser.phoneNumber;
+    owner.status = "Available";
   }
 
   void findPlace(String placeName) async {

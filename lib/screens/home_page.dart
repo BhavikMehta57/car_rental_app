@@ -62,8 +62,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     await getPlaceDirection();
     setState(() {
       searchDetailContainerHeight = 0;
-      rideDetailContainerHeight = 330;
-      bottomPaddingOfMap = 320;
+      rideDetailContainerHeight = 350;
+      bottomPaddingOfMap = 350;
       drawerOpen = false;
     });
   }
@@ -73,7 +73,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       drawerOpen = true;
       searchDetailContainerHeight = 280;
       rideDetailContainerHeight = 0;
-      bottomPaddingOfMap = 270;
+      bottomPaddingOfMap = 280;
 
       polylineSet.clear();
       markerSet.clear();
@@ -91,7 +91,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     LatLng latlngPosition = LatLng(position.latitude, position.longitude);
 
     CameraPosition cameraPosition =
-        new CameraPosition(target: latlngPosition, zoom: 14);
+        new CameraPosition(target: latlngPosition, zoom: 11);
     newGoogleMapController
         .moveCamera(CameraUpdate.newCameraPosition(cameraPosition));
 
@@ -176,7 +176,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(19.2470491, 72.8583918),
-    zoom: 14.4746,
+    zoom: 11,
   );
   AppUser userData;
 

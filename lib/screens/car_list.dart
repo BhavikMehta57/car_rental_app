@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:car_rental_app/globalvariables.dart';
 import 'package:car_rental_app/widgets/widgets.dart';
@@ -37,101 +38,131 @@ class _CarListState extends State<CarList> {
           CustomBackButton(
             pageHeader: 'Available Cars',
           ),
-          SizedBox(
-            height: 30,
-          ),
-          for (String car in widget.carlist)
-            FutureBuilder(
-              future: FirebaseFirestore.instance.collection("vehicles").doc(car).get(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return GestureDetector(
-                    onTap: () {
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DetailsCar(
-                            bookedCar : car,
-                            initialLocation: widget.initialLocation,
-                            finalDestination: widget.finalDestination,
-                            docSnapshot: snapshot,
-                            rideCost: widget.cost,
-                            pickupDate: widget.pickupDate,
-                            dropOffDate: widget.dropOffDate,
-                          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection("vehicles").where("status", isEqualTo: "Available")
+                    .snapshots()
+                ,
+                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+                  if(!snapshot.hasData){
+                    print("Connection state: has no data");
+                    return Column(
+                      children: [
+                        SizedBox(
+                          height:MediaQuery.of(context).size.height*0.2,
                         ),
+                        CircularProgressIndicator(),
+                      ],
+                    );
+                  }
+                  else if(snapshot.connectionState == ConnectionState.waiting){
+                    print("Connection state: waiting");
+                    return Column(children: [
+                      SizedBox(
+                        height:MediaQuery.of(context).size.height*0.2,
+                      ),
+                      CircularProgressIndicator(),
+                    ],
+                    );
+                  }
+                  else{
+                    print("Connection state: hasdata");
+                    if(snapshot.data.docs.length == 0){
+                      return Center(
+                        child: Text("No Cars Available"),
                       );
-                    },
-                    child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                      margin: EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(10),
-                        ),
-                      ),
-                      child: Column(
-                        children: <Widget>[
-                          Image.network(snapshot.data['vehicleImg'], height: MediaQuery.of(context).size.height/5,),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                children: [
-                                  Text(
-                                    '₹' + snapshot.data['amount'],
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15),
+                    }
+                    else{
+                      return ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        itemCount: snapshot.data.docs.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DetailsCar(
+                                    bookedCar : snapshot.data.docs[index]["vehicleId"],
+                                    initialLocation: widget.initialLocation,
+                                    finalDestination: widget.finalDestination,
+                                    docSnapshot: snapshot.data.docs[index],
+                                    rideCost: widget.cost,
+                                    pickupDate: widget.pickupDate,
+                                    dropOffDate: widget.dropOffDate,
                                   ),
-                                  Text(
-                                    snapshot.data['modelName'],
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 10),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                              margin: EdgeInsets.symmetric(vertical: 20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(10),
+                                ),
+                              ),
+                              child: Column(
+                                children: <Widget>[
+                                  Image.network(snapshot.data.docs[index]['vehicleImg'], height: MediaQuery.of(context).size.height/7,),
+                                  SizedBox(
+                                    height: 20,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Column(
+                                        children: [
+                                          Text(
+                                            '₹' + snapshot.data.docs[index]["amount"],
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15),
+                                          ),
+                                          Text(
+                                            snapshot.data.docs[index]['modelName'],
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10),
+                                          ),
+                                        ],
+                                      ),
+                                      Column(
+                                        children: [
+                                          Text(
+                                            '₹' + widget.cost.toString(),
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Ride amount',
+                                            style: TextStyle(fontSize: 10),
+                                          ),
+                                        ],
+                                      ),
+                                      Icon(
+                                        Icons.arrow_forward,
+                                        size: 20,
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                              Column(
-                                children: [
-                                  Text(
-                                    '₹' + widget.cost.toString(),
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Ride amount',
-                                    style: TextStyle(fontSize: 10),
-                                  ),
-                                ],
-                              ),
-                              Icon(
-                                Icons.arrow_forward,
-                                size: 20,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                } else {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      backgroundColor: Colors.white,
-                    ),
-                  );
+                            ),
+                          );
+                        },
+                      );
+                    }
+                  }
                 }
-              },
             ),
+          ),
         ],
       ),
     );

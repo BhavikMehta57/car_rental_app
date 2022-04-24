@@ -1,3 +1,4 @@
+import 'package:car_rental_app/screens/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class PaymentPage extends StatefulWidget {
   final String amount;
-  final AsyncSnapshot<DocumentSnapshot> docSnapshot;
+  final QueryDocumentSnapshot docSnapshot;
   String finalDestination;
   String initialLocation;
   final String bookedCar;
@@ -90,11 +91,11 @@ class _PaymentPageState extends State<PaymentPage> {
 
     Map<String, dynamic> historyMap = {
       'carId': widget.bookedCar,
-      'modelName': widget.docSnapshot.data['modelName'],
-      'ownerContact': widget.docSnapshot.data['ownerphoneNumber'],
-      'color': widget.docSnapshot.data['color'],
-      'ownerName': widget.docSnapshot.data['ownerName'],
-      'vehicleNumber': widget.docSnapshot.data['vehicleNumber'],
+      'modelName': widget.docSnapshot.data()['modelName'],
+      'ownerContact': widget.docSnapshot.data()['ownerphoneNumber'],
+      'color': widget.docSnapshot.data()['color'],
+      'ownerName': widget.docSnapshot.data()['ownerName'],
+      'vehicleNumber': widget.docSnapshot.data()['vehicleNumber'],
       'amount': widget.amount,
       'pickUp' : widget.initialLocation,
       'dropOff' : widget.finalDestination,
@@ -131,12 +132,22 @@ class _PaymentPageState extends State<PaymentPage> {
         'timestamp': DateTime.now().toString(),
       };
       dbref.set(historyMap);
-      FirebaseFirestore.instance.collection("users").doc(widget.docSnapshot.data['ownerphoneNumber']).collection("OwnerHistory").doc(id).set(historyMap);
+      FirebaseFirestore.instance.collection("users").doc(widget.docSnapshot.data()['ownerphoneNumber']).collection("OwnerHistory").doc(id).set(historyMap);
     });
 
 
     }
 
+  void updateCarStatus(){
+    FirebaseFirestore.instance.collection("users").doc(widget.docSnapshot.data()['ownerphoneNumber']).collection("vehicle_details").doc(widget.bookedCar).update(
+        {
+          'status': "Rented"
+        });
+    FirebaseFirestore.instance.collection("vehicles").doc(widget.bookedCar).update(
+        {
+          'status': "Rented"
+        });
+  }
   // void handlerErrorFailure() {
   //   Toast.show('Payment Failed', context);
   //   print('handlerErrorFailure');
@@ -169,6 +180,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
   @override
   Widget build(BuildContext context) {
+    updateCarStatus();
     saveOwnerHistory();
     saveUserHistory();
     return RideHistory();

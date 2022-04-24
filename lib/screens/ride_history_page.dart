@@ -25,151 +25,158 @@ class _RideHistoryState extends State<RideHistory> {
         padding: EdgeInsets.symmetric(horizontal: 20),
         children: <Widget>[
           CustomBackButton(pageHeader: 'My rides'),
-          SizedBox(
-            height: 10,
-          ),
-          Container(
-            height: 450,
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(25),),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 15.0,
-                    spreadRadius: 0.5,
-                    offset: Offset(0.7, 0.7),
-                  ),
-                ]
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              child: StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection("users")
-                      .doc(FirebaseAuth.instance.currentUser.phoneNumber)
-                      .collection("UserHistory")
-                      .snapshots()
-                  ,
-                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-                    if(!snapshot.hasData){
-                      print("Connection state: has no data");
-                      return Column(
-                        children: [
-                          SizedBox(
-                            height:MediaQuery.of(context).size.height*0.2,
-                          ),
-                          CircularProgressIndicator(),
-                        ],
-                      );
-                    }
-                    else if(snapshot.connectionState == ConnectionState.waiting){
-                      print("Connection state: waiting");
-                      return Column(children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 2),
+            child: StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection("users")
+                    .doc(FirebaseAuth.instance.currentUser.phoneNumber)
+                    .collection("UserHistory").orderBy("timestamp", descending: true)
+                    .snapshots()
+                ,
+                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+                  if(!snapshot.hasData){
+                    print("Connection state: has no data");
+                    return Column(
+                      children: [
                         SizedBox(
                           height:MediaQuery.of(context).size.height*0.2,
                         ),
                         CircularProgressIndicator(),
                       ],
+                    );
+                  }
+                  else if(snapshot.connectionState == ConnectionState.waiting){
+                    print("Connection state: waiting");
+                    return Column(children: [
+                      SizedBox(
+                        height:MediaQuery.of(context).size.height*0.2,
+                      ),
+                      CircularProgressIndicator(),
+                    ],
+                    );
+                  }
+                  else{
+                    print("Connection state: hasdata");
+                    if(snapshot.data.docs.length == 0){
+                      return Center(
+                        child: Text("No Cars Registered Yet"),
                       );
                     }
                     else{
-                      print("Connection state: hasdata");
-                      if(snapshot.data.docs.length == 0){
-                        return Center(
-                          child: Text("No Cars Registered Yet"),
-                        );
-                      }
-                      else{
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          scrollDirection: Axis.vertical,
-                          itemCount: snapshot.data.docs.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Container(
-                              height: 400,
-                              child: Column(
-                                children: <Widget>[
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      SpecificationWidget(
-                                        text: snapshot.data.docs[index]["modelName"],
-                                        helpText: "Your car",
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.vertical,
+                        itemCount: snapshot.data.docs.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Column(
+                            children: [
+                              Container(
+                                height: 320,
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.all(Radius.circular(25),),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 15.0,
+                                        spreadRadius: 0.5,
+                                        offset: Offset(0.7, 0.7),
                                       ),
-                                      SpecificationWidget(
-                                        text: snapshot.data.docs[index]["color"],
-                                        helpText: "Car's color",
-                                      ),
-                                      SpecificationWidget(
-                                        text: snapshot.data.docs[index]["vehicleNumber"],
-                                        helpText: 'Car number',
-                                      ),
-                                      SpecificationWidget(
-                                        text: snapshot.data.docs[index]["ownerName"],
-                                        helpText: 'Owner name',
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 40,
-                                  ),
-                                  SpecificationWidget(
-                                    text: snapshot.data.docs[index]["pickUp"],
-                                    helpText: 'Pickup location',
-                                  ),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                  SpecificationWidget(
-                                    text: snapshot.data.docs[index]["dropOff"],
-                                    helpText: 'DropOff location',
-                                  ),
-                                  SizedBox(
-                                    height: 40,
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text('From\t\t'),
-                                      Text(
-                                        snapshot.data.docs[index]["pickupDate"],
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold, fontSize: 14),
-                                      ),
-                                      Text('\t\tTo\t\t'),
-                                      Text(
-                                        snapshot.data.docs[index]["dropofDate"],
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold, fontSize: 14),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 30,
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text('Amount Paid:\t\t'),
-                                      Text(
-                                        '₹ ${snapshot.data.docs[index]["amount"]}\t\t\t',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold, fontSize: 14),
-                                      ),
-                                      Icon(Icons.check_circle),
-                                      SizedBox(
-                                        width: 50,
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                    ]
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SpecificationWidget(
+                                          text: snapshot.data.docs[index]["modelName"],
+                                          helpText: "Your car",
+                                        ),
+                                        SpecificationWidget(
+                                          text: snapshot.data.docs[index]["color"],
+                                          helpText: "Car's color",
+                                        ),
+                                        SpecificationWidget(
+                                          text: snapshot.data.docs[index]["vehicleNumber"],
+                                          helpText: 'Car number',
+                                        ),
+                                        SpecificationWidget(
+                                          text: snapshot.data.docs[index]["ownerName"],
+                                          helpText: 'Owner name',
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    SpecificationWidget(
+                                      text: snapshot.data.docs[index]["pickUp"],
+                                      helpText: 'Pickup location',
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    SpecificationWidget(
+                                      text: snapshot.data.docs[index]["dropOff"],
+                                      helpText: 'DropOff location',
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text('From\t\t'),
+                                        Text(
+                                          snapshot.data.docs[index]["pickupDate"],
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold, fontSize: 14),
+                                        ),
+                                        Text('\t\tTo\t\t'),
+                                        Text(
+                                          snapshot.data.docs[index]["dropofDate"],
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold, fontSize: 14),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text('Amount Paid:\t\t'),
+                                        Text(
+                                          '₹ ${snapshot.data.docs[index]["amount"]}\t\t\t',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold, fontSize: 14),
+                                        ),
+                                        Icon(Icons.check_circle),
+                                        SizedBox(
+                                          width: 50,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            );
-                          },
-                        );
-                      }
+                              SizedBox(
+                                height: 10,
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     }
                   }
-              ),
+                }
             ),
           ),
         ],
