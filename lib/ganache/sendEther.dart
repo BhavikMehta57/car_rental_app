@@ -24,7 +24,19 @@ class Ganache {
     EthereumAddress receiver = EthereumAddress.fromHex("0xA1b02b776a136f6922b7A91A47089b9ee69eF631");
     EthereumAddress ownAddress = await credentials.extractAddress();
     print(ownAddress);
-    client.sendTransaction(credentials, Transaction(from: ownAddress, to: receiver, value: EtherAmount.fromUnitAndValue(EtherUnit.ether, BigInt.from(etherAmount))));
+    print(etherAmount);
+    client.sendTransaction(credentials, Transaction(from: ownAddress, to: receiver, value: EtherAmount.fromUnitAndValue(EtherUnit.ether, BigInt.from(etherAmount))),chainId: 1337);
+    client.getChainId().then((value) {
+      print(value.toInt());
+    });
+    client.getNetworkId().then((value) {
+      print(value.toInt());
+    });
+    client.getTransactionByHash('0x8a95f6e6ac8d227dec4795189c7f6a9711b037cbd3b226ad9078dfa9d22279c5').then((value) {
+      print(value.blockHash);
+    });
+    client.getBlockNumber().then((value) {
+      print(value.toInt());
+    });
   }
-
 }

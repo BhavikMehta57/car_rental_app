@@ -14,8 +14,15 @@ class AssistantMethods {
     String placeAddress = '';
 
     String add1, add2, add3, add4, add5, add6;
-    String url =
-        'https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$geocodingApi';
+
+    String url = '';
+
+    if(kIsWeb){
+      url = 'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$geocodingApi';
+    }
+    else {
+      url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$geocodingApi';
+    }
 
     var response = await RequestAssistant.getRequest(url);
 

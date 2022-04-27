@@ -1,10 +1,13 @@
 import 'package:car_rental_app/ganache/sendEther.dart';
+import 'package:car_rental_app/metamask.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:car_rental_app/models/user.dart';
 import 'package:car_rental_app/screens/payement_gateway_page.dart';
+import 'package:flutter_web3/flutter_web3.dart';
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web_socket_channel/io.dart';
 
@@ -36,13 +39,12 @@ var totalCost;
 class _DetailsCarState extends State<DetailsCar> {
 
   double etherAmount = 0;
-  String rpcUrl = "http://127.0.0.1:7545";
-  String wsUrl = "ws://127.0.0.1:7545/";
+  String text="";
 
   @override
   void initState() {
     // TODO: implement initState
-    //etherAmount = double.parse((widget.rideCost + (int.parse(widget.docSnapshot.data['amount']))).toString())/236474;
+    etherAmount = double.parse((widget.rideCost + (int.parse(widget.docSnapshot.data()['amount']))).toString())/236474;
     super.initState();
   }
   @override
@@ -160,32 +162,83 @@ class _DetailsCarState extends State<DetailsCar> {
             SizedBox(
               height: 100,
             ),
-            Padding(
-              padding: EdgeInsets.all(20.0),
-              child: GestureDetector(
-                onTap: () {
-                  Ganache().sendEther(etherAmount);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PaymentPage(
-                        docSnapshot: widget.docSnapshot,
-                        initialLocation: widget.initialLocation,
-                        finalDestination: widget.finalDestination,
-                        bookedCar: widget.bookedCar,
-                        amount: (widget.rideCost +
-                                (int.parse(widget.docSnapshot.data()['amount'])))
-                            .toString(),
-                        pickupDate: widget.pickupDate,
-                        dropOffDate: widget.dropOffDate,
-                      ),
+            ChangeNotifierProvider(
+              create: (context) => MetaMaskProvider()..init(),
+              builder: (context, child) {
+                return Center(
+                    child: Consumer<MetaMaskProvider>(
+                      builder: (context, provider, child) {
+                        if (provider.isConnected && provider.isInOperatingChain) {
+                          text = 'Connected';
+                          return Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: GestureDetector(
+                              onTap: () async {
+                                print(etherAmount);
+                                print("Owner ${provider.accs[0]}");
+                                final tx = await provider.provider_sign.sendTransaction(
+                                  TransactionRequest(
+                                    to: '0x4BC0BB1F6F0bC9cC024C8889C5a6015493FecE7e',
+                                    value: BigInt.from(1),
+                                  ),
+                                );
+                                tx.hash;
+                                final receipt = await tx.wait();
+
+                                print("Transaction: ${tx.blockHash}, ${tx.data}");
+                                print(receipt.blockHash);
+                                // Ganache().sendEther(etherAmount);
+                                // Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //     builder: (context) => PaymentPage(
+                                //       docSnapshot: widget.docSnapshot,
+                                //       initialLocation: widget.initialLocation,
+                                //       finalDestination: widget.finalDestination,
+                                //       bookedCar: widget.bookedCar,
+                                //       amount: (widget.rideCost +
+                                //               (int.parse(widget.docSnapshot.data()['amount'])))
+                                //           .toString(),
+                                //       pickupDate: widget.pickupDate,
+                                //       dropOffDate: widget.dropOffDate,
+                                //     ),
+                                //   ),
+                                // );
+
+                              },
+                              child: CustomButton(
+                                text: 'Pay',
+                              ),
+                            ),
+                          );
+                        } else if (provider.isConnected && !provider.isInOperatingChain) {
+                          text = 'Wrong chain. Please connect to ${MetaMaskProvider.operatingChain}';
+                        } else if (provider.isEnabled) {
+                          return Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                context.read<MetaMaskProvider>().connect();
+                              },
+                              child: CustomButton(
+                                text: 'Connect to Metamask',
+                              ),
+                            ),
+                          );
+                        } else {
+                          text = 'Please use a Web3 supported browser.';
+                        }
+                        return Container(
+                          child: Text(
+                            text,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headline5,
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-                child: CustomButton(
-                  text: 'Pay',
-                ),
-              ),
+                );
+              },
             ),
           ],
         ),
