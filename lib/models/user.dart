@@ -8,6 +8,7 @@ class AppUser {
   // String dpURL;
   bool hasCompleteProfile = false;
   String uuid;
+  String ownAddress;
 
   AppUser();
 
@@ -22,6 +23,7 @@ class AppUser {
       // 'dpURL': dpURL,
       'hasCompletedProfile': hasCompleteProfile,
       'uuid': uuid,
+      'ownAddress': ownAddress
     };
   }
 
@@ -35,6 +37,7 @@ class AppUser {
     // dpURL = data['dpURL'];
     hasCompleteProfile = data['hasCompleteProfile'];
     uuid = data['uuid'];
+    ownAddress = data['ownAddress'];
   }
 }
 

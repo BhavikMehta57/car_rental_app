@@ -4,6 +4,7 @@ import 'package:car_rental_app/assistant/request.dart';
 import 'package:car_rental_app/models/placePrediction.dart';
 import 'package:car_rental_app/screens/search_dropOff.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:car_rental_app/models/user.dart';
@@ -78,8 +79,13 @@ class _VehicleDetailsState extends State<VehicleDetails> {
 
   void findPlace(String placeName) async {
     if (placeName.length > 0) {
-      String autoCompleteUrl =
-          'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$placeName&key=$geocodingApi&components=country:in';
+      String autoCompleteUrl = "";
+      if(kIsWeb) {
+        autoCompleteUrl = 'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$placeName&key=$geocodingApi&components=country:in';
+      }
+      else{
+        autoCompleteUrl = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$placeName&key=$geocodingApi&components=country:in';
+      }
       var res = await RequestAssistant.getRequest(autoCompleteUrl);
 
       if (res == 'failed') {
@@ -298,7 +304,13 @@ class _VehicleDetailsState extends State<VehicleDetails> {
                     GestureDetector(
                       onTap: () async {
                         if(_formKey.currentState.validate()){
-                          String placeDetailsUrl = 'https://maps.googleapis.com/maps/api/place/details/json?place_id=${vehicleLocation.place_id}&key=$geocodingApi';
+                          String placeDetailsUrl = "";
+                          if (kIsWeb){
+                            placeDetailsUrl = 'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/details/json?place_id=${vehicleLocation.place_id}&key=$geocodingApi';
+                          }
+                          else {
+                            placeDetailsUrl = 'https://maps.googleapis.com/maps/api/place/details/json?place_id=${vehicleLocation.place_id}&key=$geocodingApi';
+                          }
                           var res = await RequestAssistant.getRequest(placeDetailsUrl);
                           if (res == 'failed') {
                             return;

@@ -40,11 +40,21 @@ class _DetailsCarState extends State<DetailsCar> {
 
   double etherAmount = 0;
   String text="";
+  String carOwnerAddress="";
 
+  Future<void> getCarOwnerAddress() async {
+    await FirebaseFirestore.instance.collection("users").doc(widget.docSnapshot.data()['ownerphoneNumber']).get().then((value) {
+      setState(() {
+        carOwnerAddress = value.data()['ownAddress'];
+      });
+    });
+  }
+  
   @override
   void initState() {
     // TODO: implement initState
-    etherAmount = double.parse((widget.rideCost + (int.parse(widget.docSnapshot.data()['amount']))).toString())/236474;
+    etherAmount = (double.parse((widget.rideCost + (int.parse(widget.docSnapshot.data()['amount']))).toString())/236474)*1000000000000000000;
+    getCarOwnerAddress();
     super.initState();
   }
   @override
@@ -175,11 +185,16 @@ class _DetailsCarState extends State<DetailsCar> {
                             child: GestureDetector(
                               onTap: () async {
                                 print(etherAmount);
-                                print("Owner ${provider.accs[0]}");
-                                final tx = await provider.provider_sign.sendTransaction(
+                                final web3provider = Web3Provider.fromEthereum(ethereum);
+                                final bal = await web3provider.getBalance(provider.currentAddress);
+                                print("Balance $bal");
+                                final signer = web3provider.getSigner();
+                                print(BigInt.one);
+                                final tx = await signer.sendTransaction(
                                   TransactionRequest(
-                                    to: '0x4BC0BB1F6F0bC9cC024C8889C5a6015493FecE7e',
-                                    value: BigInt.from(1),
+                                    to: carOwnerAddress,
+                                    value: BigInt.from(etherAmount),
+                                    maxFeePerGas: BigInt.from(2),
                                   ),
                                 );
                                 tx.hash;
@@ -188,22 +203,22 @@ class _DetailsCarState extends State<DetailsCar> {
                                 print("Transaction: ${tx.blockHash}, ${tx.data}");
                                 print(receipt.blockHash);
                                 // Ganache().sendEther(etherAmount);
-                                // Navigator.push(
-                                //   context,
-                                //   MaterialPageRoute(
-                                //     builder: (context) => PaymentPage(
-                                //       docSnapshot: widget.docSnapshot,
-                                //       initialLocation: widget.initialLocation,
-                                //       finalDestination: widget.finalDestination,
-                                //       bookedCar: widget.bookedCar,
-                                //       amount: (widget.rideCost +
-                                //               (int.parse(widget.docSnapshot.data()['amount'])))
-                                //           .toString(),
-                                //       pickupDate: widget.pickupDate,
-                                //       dropOffDate: widget.dropOffDate,
-                                //     ),
-                                //   ),
-                                // );
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PaymentPage(
+                                      docSnapshot: widget.docSnapshot,
+                                      initialLocation: widget.initialLocation,
+                                      finalDestination: widget.finalDestination,
+                                      bookedCar: widget.bookedCar,
+                                      amount: (widget.rideCost +
+                                              (int.parse(widget.docSnapshot.data()['amount'])))
+                                          .toString(),
+                                      pickupDate: widget.pickupDate,
+                                      dropOffDate: widget.dropOffDate,
+                                    ),
+                                  ),
+                                );
 
                               },
                               child: CustomButton(
@@ -240,6 +255,9 @@ class _DetailsCarState extends State<DetailsCar> {
                 );
               },
             ),
+            SizedBox(
+              height: 20,
+            )
           ],
         ),
       ),

@@ -1,3 +1,5 @@
+import 'package:car_rental_app/metamask.dart';
+import 'package:car_rental_app/screens/owner_history.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:car_rental_app/models/user.dart';
@@ -5,6 +7,7 @@ import 'package:car_rental_app/screens/home_page.dart';
 import 'package:car_rental_app/services/firebase_services.dart';
 import 'package:car_rental_app/services/validation_services.dart';
 import 'package:car_rental_app/widgets/widgets.dart';
+import 'package:provider/provider.dart';
 
 class CompleteProfile extends StatefulWidget {
   @override
@@ -23,6 +26,8 @@ class _CompleteProfileState extends State<CompleteProfile> {
   // String _imageUrl;
 
   AppUser user = AppUser();
+  String text = "";
+  String ownAddress="";
 
   FirebaseFunctions firebaseFunctions = FirebaseFunctions();
 
@@ -36,6 +41,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
     user.phoneNumber = FirebaseAuth.instance.currentUser.phoneNumber;
     user.uuid = FirebaseAuth.instance.currentUser.uid;
     user.hasCompleteProfile = true;
+    user.ownAddress = ownAddress;
   }
 
   @override
@@ -154,71 +160,185 @@ class _CompleteProfileState extends State<CompleteProfile> {
                     SizedBox(
                       height: 0.05 * deviceSize.height,
                     ),
-                    GestureDetector(
-                      onTap: () async {
-                        // if (_formKey.currentState.validate() &&
-                        //     _imageUrl != null) {
-                        //   ///Tell the user that process has started
-                        //   Scaffold.of(context).showSnackBar(
-                        //       SnackBar(content: Text('Processing')));
-                        //
-                        //   ///Testing url
-                        //   print(_imageUrl);
-                        //
-                        //   ///Initialize User after successful validation of fields
-                        //   initAppUser();
-                        //
-                        //   ///Make the call to upload user data
-                        //   String isComplete = await firebaseFunctions
-                        //       .uploadUserData(user.toMap());
-                        //
-                        //   ///Check if it was uploaded successfully or else show the error
-                        //   if (isComplete == 'true') {
-                        //     Navigator.push(
-                        //       context,
-                        //       MaterialPageRoute(
-                        //         builder: (context) {
-                        //           return HomePage();
-                        //         },
-                        //       ),
-                        //     );
-                        //   } else {
-                        //     Scaffold.of(context).showSnackBar(
-                        //         SnackBar(content: Text(isComplete)));
-                        //   }
-                        // }
-                        if(_formKey.currentState.validate()){
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Processing')));
-                        initAppUser();
-                        String isComplete = await firebaseFunctions
-                            .uploadUserData(user.toMap());
-                        if (isComplete == 'true') {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return HomePage();
-                              },
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(isComplete)));
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return CompleteProfile();
-                              },
-                            ),
-                          );
-                        }}
+                    ChangeNotifierProvider(
+                      create: (context) => MetaMaskProvider()..init(),
+                      builder: (context, child) {
+                        return Center(
+                          child: Consumer<MetaMaskProvider>(
+                            builder: (context, provider, child) {
+                              if (provider.isConnected && provider.isInOperatingChain) {
+                                text = 'Connected';
+                                ownAddress = provider.currentAddress;
+                                return Padding(
+                                  padding: EdgeInsets.all(20.0),
+                                  child: Column(
+                                    children: [
+                                      SpecificationWidget(
+                                        text: provider.currentAddress,
+                                        helpText: "Your Account Address",
+                                      ),
+                                      GestureDetector(
+                                        onTap: () async {
+                                          // if (_formKey.currentState.validate() &&
+                                          //     _imageUrl != null) {
+                                          //   ///Tell the user that process has started
+                                          //   Scaffold.of(context).showSnackBar(
+                                          //       SnackBar(content: Text('Processing')));
+                                          //
+                                          //   ///Testing url
+                                          //   print(_imageUrl);
+                                          //
+                                          //   ///Initialize User after successful validation of fields
+                                          //   initAppUser();
+                                          //
+                                          //   ///Make the call to upload user data
+                                          //   String isComplete = await firebaseFunctions
+                                          //       .uploadUserData(user.toMap());
+                                          //
+                                          //   ///Check if it was uploaded successfully or else show the error
+                                          //   if (isComplete == 'true') {
+                                          //     Navigator.push(
+                                          //       context,
+                                          //       MaterialPageRoute(
+                                          //         builder: (context) {
+                                          //           return HomePage();
+                                          //         },
+                                          //       ),
+                                          //     );
+                                          //   } else {
+                                          //     Scaffold.of(context).showSnackBar(
+                                          //         SnackBar(content: Text(isComplete)));
+                                          //   }
+                                          // }
+                                          if(_formKey.currentState.validate()){
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text('Processing')));
+                                            initAppUser();
+                                            String isComplete = await firebaseFunctions
+                                                .uploadUserData(user.toMap());
+                                            if (isComplete == 'true') {
+                                              await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) {
+                                                    return HomePage();
+                                                  },
+                                                ),
+                                              );
+                                            } else {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text(isComplete)));
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) {
+                                                    return CompleteProfile();
+                                                  },
+                                                ),
+                                              );
+                                            }}
+                                        },
+                                        child: CustomButton(
+                                          text: 'Save',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else if (provider.isConnected && !provider.isInOperatingChain) {
+                                text = 'Wrong chain. Please connect to ${MetaMaskProvider.operatingChain}';
+                              } else if (provider.isEnabled) {
+                                return Padding(
+                                  padding: EdgeInsets.all(20.0),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      context.read<MetaMaskProvider>().connect();
+                                    },
+                                    child: CustomButton(
+                                      text: 'Connect to Metamask',
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                text = 'Please use a Web3 supported browser.';
+                              }
+                              return Container(
+                                child: Text(
+                                  text,
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.headline5,
+                                ),
+                              );
+                            },
+                          ),
+                        );
                       },
-                      child: CustomButton(
-                        text: 'Save',
-                      ),
                     ),
+                    // GestureDetector(
+                    //   onTap: () async {
+                    //     // if (_formKey.currentState.validate() &&
+                    //     //     _imageUrl != null) {
+                    //     //   ///Tell the user that process has started
+                    //     //   Scaffold.of(context).showSnackBar(
+                    //     //       SnackBar(content: Text('Processing')));
+                    //     //
+                    //     //   ///Testing url
+                    //     //   print(_imageUrl);
+                    //     //
+                    //     //   ///Initialize User after successful validation of fields
+                    //     //   initAppUser();
+                    //     //
+                    //     //   ///Make the call to upload user data
+                    //     //   String isComplete = await firebaseFunctions
+                    //     //       .uploadUserData(user.toMap());
+                    //     //
+                    //     //   ///Check if it was uploaded successfully or else show the error
+                    //     //   if (isComplete == 'true') {
+                    //     //     Navigator.push(
+                    //     //       context,
+                    //     //       MaterialPageRoute(
+                    //     //         builder: (context) {
+                    //     //           return HomePage();
+                    //     //         },
+                    //     //       ),
+                    //     //     );
+                    //     //   } else {
+                    //     //     Scaffold.of(context).showSnackBar(
+                    //     //         SnackBar(content: Text(isComplete)));
+                    //     //   }
+                    //     // }
+                    //     if(_formKey.currentState.validate()){
+                    //     ScaffoldMessenger.of(context).showSnackBar(
+                    //         SnackBar(content: Text('Processing')));
+                    //     initAppUser();
+                    //     String isComplete = await firebaseFunctions
+                    //         .uploadUserData(user.toMap());
+                    //     if (isComplete == 'true') {
+                    //       await Navigator.push(
+                    //         context,
+                    //         MaterialPageRoute(
+                    //           builder: (context) {
+                    //             return HomePage();
+                    //           },
+                    //         ),
+                    //       );
+                    //     } else {
+                    //       ScaffoldMessenger.of(context).showSnackBar(
+                    //           SnackBar(content: Text(isComplete)));
+                    //       Navigator.push(
+                    //         context,
+                    //         MaterialPageRoute(
+                    //           builder: (context) {
+                    //             return CompleteProfile();
+                    //           },
+                    //         ),
+                    //       );
+                    //     }}
+                    //   },
+                    //   child: CustomButton(
+                    //     text: 'Save',
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
