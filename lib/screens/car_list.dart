@@ -118,13 +118,29 @@ class _CarListState extends State<CarList> {
                                       Column(
                                         children: [
                                           Text(
+                                            snapshot.data.docs[index]['modelName'],
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15),
+                                          ),
+                                          Text(
+                                            snapshot.data.docs[index]['ownerName'],
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10),
+                                          ),
+                                        ],
+                                      ),
+                                      Column(
+                                        children: [
+                                          Text(
                                             '₹' + snapshot.data.docs[index]["amount"],
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 15),
                                           ),
                                           Text(
-                                            snapshot.data.docs[index]['modelName'],
+                                            "Rent per day",
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 10),

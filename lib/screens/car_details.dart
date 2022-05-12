@@ -39,6 +39,7 @@ var totalCost;
 class _DetailsCarState extends State<DetailsCar> {
 
   double etherAmount = 0;
+  double carRent = 0;
   String text="";
   String carOwnerAddress="";
 
@@ -53,214 +54,223 @@ class _DetailsCarState extends State<DetailsCar> {
   @override
   void initState() {
     // TODO: implement initState
-    etherAmount = (double.parse((widget.rideCost + (int.parse(widget.docSnapshot.data()['amount']))).toString())/236474)*1000000000000000000;
+    int numberOfDays = DateTime.parse(widget.dropOffDate).difference(DateTime.parse(widget.pickupDate)).inDays;
+    carRent = double.parse(widget.docSnapshot.data()['amount'])*numberOfDays;
+    etherAmount = (double.parse((carRent + widget.rideCost).toString())/236474)*1000000000000000000;
+    print(etherAmount);
     getCarOwnerAddress();
     super.initState();
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              decoration: BoxDecoration(
-                color: Color.fromRGBO(235, 235, 240, 1),
-                borderRadius: BorderRadius.only(
-                  bottomRight: Radius.circular(40),
-                  bottomLeft: Radius.circular(40),
-                ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CustomBackButton(
-                      pageHeader: '',
+    return WillPopScope(
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color.fromRGBO(235, 235, 240, 1),
+                    borderRadius: BorderRadius.only(
+                      bottomRight: Radius.circular(40),
+                      bottomLeft: Radius.circular(40),
                     ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Text(
-                      widget.docSnapshot.data()['modelName'],
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 30,
-                      ),
-                    ),
-                    Text(
-                      widget.docSnapshot.data()['ownerName'].toUpperCase(),
-                      style: TextStyle(
-                        color: Color.fromRGBO(27, 34, 46, 1),
-                        fontSize: 12,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Image.network(
-                      widget.docSnapshot.data()['vehicleImg'],
-                      width: MediaQuery.of(context).size.width,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 50,
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'SPECIFICATIONS',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SpecificationWidget(
-                        text: '₹ ' + widget.docSnapshot.data()['amount'],
-                        helpText: 'Car rent',
-                      ),
-                      SpecificationWidget(
-                        text: '₹ ' + widget.rideCost.toString(),
-                        helpText: 'Your ride cost',
-                      ),
-                      SpecificationWidget(
-                        text: '₹ ' +
-                            (widget.rideCost +
-                                    (int.parse(widget.docSnapshot.data()['amount'])))
-                                .toString(),
-                        helpText: 'Total cost',
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SpecificationWidget(
-                        text: widget.docSnapshot.data()['color'],
-                        helpText: "Car's Color",
-                      ),
-                      SpecificationWidget(
-                        text: widget.pickupDate,
-                        helpText: 'Pickup date',
-                      ),
-                      SpecificationWidget(
-                        text: widget.dropOffDate,
-                        helpText: 'DropOff date',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 100,
-            ),
-            ChangeNotifierProvider(
-              create: (context) => MetaMaskProvider()..init(),
-              builder: (context, child) {
-                return Center(
-                    child: Consumer<MetaMaskProvider>(
-                      builder: (context, provider, child) {
-                        if (provider.isConnected && provider.isInOperatingChain) {
-                          text = 'Connected';
-                          return Padding(
-                            padding: EdgeInsets.all(20.0),
-                            child: GestureDetector(
-                              onTap: () async {
-                                print(etherAmount);
-                                final web3provider = Web3Provider.fromEthereum(ethereum);
-                                final bal = await web3provider.getBalance(provider.currentAddress);
-                                print("Balance $bal");
-                                final signer = web3provider.getSigner();
-                                print(BigInt.one);
-                                final tx = await signer.sendTransaction(
-                                  TransactionRequest(
-                                    to: carOwnerAddress,
-                                    value: BigInt.from(etherAmount),
-                                    maxFeePerGas: BigInt.from(2),
-                                  ),
-                                );
-                                tx.hash;
-                                final receipt = await tx.wait();
-
-                                print("Transaction: ${tx.blockHash}, ${tx.data}");
-                                print(receipt.blockHash);
-                                // Ganache().sendEther(etherAmount);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PaymentPage(
-                                      docSnapshot: widget.docSnapshot,
-                                      initialLocation: widget.initialLocation,
-                                      finalDestination: widget.finalDestination,
-                                      bookedCar: widget.bookedCar,
-                                      amount: (widget.rideCost +
-                                              (int.parse(widget.docSnapshot.data()['amount'])))
-                                          .toString(),
-                                      pickupDate: widget.pickupDate,
-                                      dropOffDate: widget.dropOffDate,
-                                    ),
-                                  ),
-                                );
-
-                              },
-                              child: CustomButton(
-                                text: 'Pay',
-                              ),
-                            ),
-                          );
-                        } else if (provider.isConnected && !provider.isInOperatingChain) {
-                          text = 'Wrong chain. Please connect to ${MetaMaskProvider.operatingChain}';
-                        } else if (provider.isEnabled) {
-                          return Padding(
-                            padding: EdgeInsets.all(20.0),
-                            child: GestureDetector(
-                              onTap: () {
-                                context.read<MetaMaskProvider>().connect();
-                              },
-                              child: CustomButton(
-                                text: 'Connect to Metamask',
-                              ),
-                            ),
-                          );
-                        } else {
-                          text = 'Please use a Web3 supported browser.';
-                        }
-                        return Container(
-                          child: Text(
-                            text,
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headline5,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Text(
+                          widget.docSnapshot.data()['modelName'],
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 30,
                           ),
-                        );
-                      },
+                        ),
+                        Text(
+                          widget.docSnapshot.data()['ownerName'].toUpperCase(),
+                          style: TextStyle(
+                            color: Color.fromRGBO(27, 34, 46, 1),
+                            fontSize: 12,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Image.network(
+                          widget.docSnapshot.data()['vehicleImg'],
+                          width: MediaQuery.of(context).size.width,
+                        ),
+                      ],
                     ),
-                );
-              },
+                  ),
+                ),
+                SizedBox(
+                  height: 50,
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'SPECIFICATIONS',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SpecificationWidget(
+                            text: '₹ ' + carRent.toString(),
+                            helpText: 'Car rent',
+                          ),
+                          SpecificationWidget(
+                            text: '₹ ' + widget.rideCost.toString(),
+                            helpText: 'Your ride cost',
+                          ),
+                          SpecificationWidget(
+                            text: '₹ ' +
+                                (widget.rideCost + carRent)
+                                    .toString(),
+                            helpText: 'Total cost',
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SpecificationWidget(
+                            text: widget.docSnapshot.data()['color'],
+                            helpText: "Car's Color",
+                          ),
+                          SpecificationWidget(
+                            text: widget.pickupDate,
+                            helpText: 'Pickup date',
+                          ),
+                          SpecificationWidget(
+                            text: widget.dropOffDate,
+                            helpText: 'DropOff date',
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 100,
+                ),
+                ChangeNotifierProvider(
+                  create: (context) => MetaMaskProvider()..init(),
+                  builder: (context, child) {
+                    return Center(
+                      child: Consumer<MetaMaskProvider>(
+                        builder: (context, provider, child) {
+                          if (provider.isConnected && provider.isInOperatingChain) {
+                            text = 'Connected';
+                            return Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: GestureDetector(
+                                onTap: () async {
+                                  print(etherAmount);
+                                  final web3provider = Web3Provider.fromEthereum(ethereum);
+                                  final bal = await web3provider.getBalance(provider.currentAddress);
+                                  print("Balance $bal");
+                                  final signer = web3provider.getSigner();
+                                  print(BigInt.one);
+                                  final tx = await signer.sendTransaction(
+                                    TransactionRequest(
+                                      to: carOwnerAddress,
+                                      value: BigInt.from(etherAmount),
+                                      maxFeePerGas: BigInt.from(2),
+                                    ),
+                                  );
+                                  tx.hash;
+                                  final receipt = await tx.wait();
+
+                                  print("Transaction: ${tx.blockHash}, ${tx.data}");
+                                  print(receipt.blockHash);
+                                  // Ganache().sendEther(etherAmount);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PaymentPage(
+                                        docSnapshot: widget.docSnapshot,
+                                        initialLocation: widget.initialLocation,
+                                        finalDestination: widget.finalDestination,
+                                        bookedCar: widget.bookedCar,
+                                        amount: (widget.rideCost +
+                                            (int.parse(widget.docSnapshot.data()['amount'])))
+                                            .toString(),
+                                        pickupDate: widget.pickupDate,
+                                        dropOffDate: widget.dropOffDate,
+                                      ),
+                                    ),
+                                  );
+
+                                },
+                                child: CustomButton(
+                                  text: 'Pay',
+                                ),
+                              ),
+                            );
+                          } else if (provider.isConnected && !provider.isInOperatingChain) {
+                            text = 'Wrong chain. Please connect to ${MetaMaskProvider.operatingChain}';
+                          } else if (provider.isEnabled) {
+                            return Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: GestureDetector(
+                                onTap: () {
+                                  context.read<MetaMaskProvider>().connect();
+                                },
+                                child: CustomButton(
+                                  text: 'Connect to Metamask',
+                                ),
+                              ),
+                            );
+                          } else {
+                            text = 'Please use a Web3 supported browser.';
+                          }
+                          return Container(
+                            child: Text(
+                              text,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.headline5,
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                SizedBox(
+                  height: 20,
+                )
+              ],
             ),
-            SizedBox(
-              height: 20,
-            )
-          ],
+          ),
         ),
-      ),
+        onWillPop: () async {
+          if(text == "Connected"){
+            return false;
+          }
+          else{
+            return true;
+          }
+        },
     );
   }
 }

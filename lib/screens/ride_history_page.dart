@@ -24,7 +24,45 @@ class _RideHistoryState extends State<RideHistory> {
       body: ListView(
         padding: EdgeInsets.symmetric(horizontal: 20),
         children: <Widget>[
-          CustomBackButton(pageHeader: 'My rides'),
+          Padding(
+            padding: const EdgeInsets.only(top: 45),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+                  },
+                  child: Container(
+                    width: 35,
+                    height: 35,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.grey,
+                      ),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(40),
+                      ),
+                    ),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.arrow_back_rounded,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      "My Rides",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 2),
             child: StreamBuilder(
@@ -60,7 +98,7 @@ class _RideHistoryState extends State<RideHistory> {
                     print("Connection state: hasdata");
                     if(snapshot.data.docs.length == 0){
                       return Center(
-                        child: Text("No Cars Registered Yet"),
+                        child: Text("No Cars Booked Yet"),
                       );
                     }
                     else{
