@@ -50,6 +50,6 @@
            android:name="com.google.android.gms.version"
            android:value="@integer/google_play_services_version" />
        <meta-data android:name="com.google.android.geo.API_KEY"
-           android:value="AIzaSyDN10Hbi3k1DzWlnb7rSYwimgL_Nsn2gCQ"/>
+           android:value="YOURAPIKEY"/>
     </application>
 </manifest>
