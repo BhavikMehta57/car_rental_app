@@ -1,16 +1,13 @@
-# car_rental_app
+# Blockchain Based Car Rental Web App
 
-A new Flutter application.
+The main objective of the project is to let users give their own cars on rent as well as rent other cars directly without any third party interference or any company so that users can directly get into contact with car owners instead of having to pay commissions to any middleman or company. We have provided users to select cars as per their requirement and the system will give charge according to it. Our application has user friendly interface. Also, we have used Blockchain for the transactions which would be having decentralized structure will help in security and privacy.
 
-## Getting Started
+## TechStack
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Platform - WEB
+Frontend - Flutter
+Backend - Firebase
+Database - Firestore
+Blockchain - Ganache
+API - Places API ,Geocoding API ,Maps JavaScript API ,Android Device Verification,Service Usage API ,Cloud Logging API ,Directions API
+IDE - Android Studio
