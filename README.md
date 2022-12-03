@@ -4,10 +4,10 @@ The main objective of the project is to let users give their own cars on rent as
 
 ## TechStack
 
-Platform - WEB
-Frontend - Flutter
-Backend - Firebase
-Database - Firestore
-Blockchain - Ganache
-API - Places API ,Geocoding API ,Maps JavaScript API ,Android Device Verification,Service Usage API ,Cloud Logging API ,Directions API
-IDE - Android Studio
+Platform - WEB<br/>
+Frontend - Flutter<br/>
+Backend - Firebase<br/>
+Database - Firestore<br/>
+Blockchain - Ganache<br/>
+API - Places API ,Geocoding API ,Maps JavaScript API ,Android Device Verification,Service Usage API ,Cloud Logging API ,Directions API<br/>
+IDE - Android Studio<br/>
